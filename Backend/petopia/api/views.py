@@ -176,10 +176,11 @@ def google_auth(request):
         name = idinfo.get('name', '')
         print(email, name)
         # Check if the user exists
+        email_prefix = email.split('@')[0]
         user, created = User.objects.get_or_create(email=email)
         
         if created:
-            user.username = email  # or use some logic to generate a username
+            user.username = email_prefix  # or use some logic to generate a username
             user.first_name = name.split()[0] if name else ''
             user.last_name = name.split()[-1] if name else ''
             user.save()
