@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { useState, useRef, useCallback, useEffect, act } from 'react'
 import Link from 'next/link'
 import Cropper from 'react-easy-crop'
 import { Input } from "@/components/ui/input"
@@ -18,6 +18,9 @@ import PhoneInput from 'react-phone-input-2'
 import 'react-phone-input-2/lib/style.css'
 import Cookies from 'js-cookie'
 import { useRouter } from 'next/navigation'
+import { ToastAction } from "@/components/ui/toast"
+import { useToast } from "@/hooks/use-toast"
+import { Toaster } from "@/components/ui/toaster"
 
 export default function AccountPage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -25,6 +28,9 @@ export default function AccountPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [country, setCountry] = useState('US')
   const router = useRouter()
+
+  const [passwordError, setPasswordError] = useState('')
+  const { toast } = useToast()
 
   const [cropperOpen, setCropperOpen] = useState(false)
   const [croppedImage, setCroppedImage] = useState(null)
@@ -60,7 +66,6 @@ export default function AccountPage() {
       gender: e.target.gender?.value,
     }
     
-    console.log(updatedUser)
     try {
       const response = await api.put('/user/update_me/', updatedUser)
       setUser(response.data)
@@ -80,6 +85,42 @@ export default function AccountPage() {
   const onCropComplete = useCallback((croppedArea, croppedAreaPixels) => {
     setCroppedImage(croppedAreaPixels)
   }, [])
+  const HandleAccountDelete = async (e) => {
+    e.preventDefault()
+    const confirmUsername = e.target['confirm-username'].value
+  
+    if (confirmUsername !== user.username) {
+      toast({
+        title: "Error",
+        description: "Username does not match",
+        action: ToastAction.Error,
+      })
+      return
+    
+    }
+    try
+    {
+      const response = await api.post('/delete-account/')
+      toast({
+        title: "Success",
+        description: "Your account has been successfully deleted.",
+        action: ToastAction.Success,
+      })
+      Cookies.remove('accessToken')
+      Cookies.remove('refreshToken')
+      Cookies.remove('username')
+      await new Promise(resolve => setTimeout(resolve, 1500))
+      router.push('/')
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "An error occurred while deleting your account",
+        action: ToastAction.Error,
+      })
+    }
+
+
+  }
 
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -89,6 +130,67 @@ export default function AccountPage() {
         setCropperOpen(true)
       })
       reader.readAsDataURL(e.target.files[0])
+    }
+  }
+
+  const HandleChangePassword = async (e) => {
+    e.preventDefault()
+    setPasswordError('')
+
+    const currentPassword = e.target['current-password'].value
+    const newPassword = e.target['new-password'].value
+    const confirmPassword = e.target['confirm-password'].value
+
+    // Validate inputs
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setPasswordError('All fields are required')
+      return
+    }
+
+    if (newPassword !== confirmPassword) {
+      setPasswordError('New password and confirmation do not match')
+      return
+    }
+
+    if (newPassword.length < 8) {
+      setPasswordError('New password must be at least 8 characters long')
+      return
+    }
+
+    try {
+      const response = await api.post('/change-password/', {
+        old_password: currentPassword,
+        new_password: newPassword,
+      })
+
+      if (response.status === 200) {
+        toast({
+          title: "Success",
+          description: "Your password has been successfully changed.",
+          action: ToastAction.Success,
+        })
+        // Clear the form
+        e.target.reset()
+
+        // Log out the user
+        Cookies.remove('accessToken')
+        Cookies.remove('refreshToken')
+        Cookies.remove('username')
+        await new Promise(resolve => setTimeout(resolve, 3000))
+      
+
+        router.push('/account/auth')
+      }
+    } catch (error) {
+      console.error('Error changing password:', error)
+      if (error.response && error.response.status === 401) {
+        setPasswordError('Current password is incorrect')
+      } else
+      if (error.response && error.response.data && error.response.data.detail) {
+        setPasswordError(error.response.data.detail)
+      } else {
+        setPasswordError('An error occurred while changing the password')
+      }
     }
   }
 
@@ -161,8 +263,10 @@ export default function AccountPage() {
                   aria-haspopup="true"
                 >
                     <Avatar className="w-8 h-8">
-                    <AvatarImage src={user.avatar} alt="User Avatar" />
-                    <AvatarFallback>{user.first_name?.[0]}{user.last_name?.[0]}</AvatarFallback>
+                    <AvatarImage src={user?.avatar} alt="User Avatar" />
+                    <AvatarFallback>
+                      {user?.username ? user.username.substring(0,2) : 'U'}
+                    </AvatarFallback>
                     </Avatar>
                   <span className="sr-only">User menu</span>
                 </Button>
@@ -182,7 +286,7 @@ export default function AccountPage() {
               
               {isMenuOpen && user && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10">
-                  <a href={`/account/${user.username}`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                  <a href={`/account/${user?.username}`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                     My Profile
                   </a>
                   <button
@@ -211,8 +315,10 @@ export default function AccountPage() {
             <div className="mb-8 flex items-center space-x-4">
               <div className="relative">
                 <Avatar className="w-24 h-24">
-                  <AvatarImage src={user.avatar} alt="User Avatar" />
-                  <AvatarFallback>{user.first_name?.[0]}{user.last_name?.[0]}</AvatarFallback>
+                  <AvatarImage src={user?.avatar} alt="User Avatar" />
+                  <AvatarFallback>
+                  {user.username ? `${user?.username[0]}${user?.username[1]}` : '??'}
+                </AvatarFallback>
                 </Avatar>
                 <label htmlFor="avatar-upload" className="absolute bottom-0 right-0 bg-primary text-white rounded-full p-2 cursor-pointer">
                   <Camera className="h-4 w-4" />
@@ -339,26 +445,29 @@ export default function AccountPage() {
                         <TabsTrigger value="delete">Delete Account</TabsTrigger>
                       </TabsList>
                       <TabsContent value="password">
-                        <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
-                          <div>
-                            <Label htmlFor="current-password">Current Password</Label>
-                            <Input id="current-password" type="password" />
-                          </div>
-                          <div>
-                            <Label htmlFor="new-password">New Password</Label>
-                            <Input id="new-password" type="password" />
-                          </div>
-                          <div>
-                            <Label htmlFor="confirm-password">Confirm New Password</Label>
-                            <Input id="confirm-password" type="password" />
-                          </div>
-                          <Button type="submit">Change Password</Button>
-                        </form>
+                      <form onSubmit={HandleChangePassword} className="space-y-4">
+                        <div>
+                          <Label htmlFor="current-password">Current Password</Label>
+                          <Input id="current-password" type="password" />
+                        </div>
+                        <div>
+                          <Label htmlFor="new-password">New Password</Label>
+                          <Input id="new-password" type="password" />
+                        </div>
+                        <div>
+                          <Label htmlFor="confirm-password">Confirm New Password</Label>
+                          <Input id="confirm-password" type="password" />
+                        </div>
+                        {passwordError && (
+                          <p className="text-red-500 text-sm">{passwordError}</p>
+                        )}
+                        <Button type="submit">Change Password</Button>
+                      </form>
                       </TabsContent>
                       <TabsContent value="delete">
                         <div className="space-y-4">
                           <p className="text-red-600">Warning: This action cannot be undone. All your data will be permanently deleted.</p>
-                          <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
+                          <form onSubmit={HandleAccountDelete} className="space-y-4">
                             <div>
                               <Label htmlFor="confirm-username">Type your username to confirm</Label>
                               <Input id="confirm-username" placeholder={user.username} />
@@ -400,6 +509,7 @@ export default function AccountPage() {
       </Dialog>
 
       <Snowfall />
+      <Toaster />
     </div>
   )
 }

@@ -58,7 +58,32 @@ def RegisterView(request):
 
         return Response({"message": "User registered successfully"}, status=status.HTTP_201_CREATED)
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def change_password(request):
+    try:
 
+        user = request.user
+        old_password = request.data.get('old_password')
+        new_password = request.data.get('new_password')
+        if not user.check_password(old_password):
+            print("old password is incorrect")
+            return Response({'error': 'Old password is incorrect'}, status=status.HTTP_401_UNAUTHORIZED)
+        user.set_password(new_password)
+        user.save()
+        return Response({'message': 'Password changed successfully'}, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({'error': 'An error occurred while changing password'}, status=status.HTTP_400_BAD_REQUEST)
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def delete_account(request):
+    try:
+        user = request.user
+        user.delete()
+        return Response({'message': 'Account deleted successfully'}, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({'error': 'An error occurred while deleting account'}, status=status.HTTP_400_BAD_REQUEST)
+    
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def logout(request):
