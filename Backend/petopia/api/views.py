@@ -167,15 +167,9 @@ class CustomUserViewSet(viewsets.ModelViewSet):
     def update_me(self, request):
         """Update the current authenticated user's data."""
         user = request.user
-        data = request.data.copy()
+        data = request.data
 
-        keys_to_remove = [field for field, value in data.items() if not value or value == "null"]
-
-        # Remove keys after iteration
-        for key in keys_to_remove:
-            data.pop(key, None)
-
-        serializer = self.get_serializer(user, data=data,partial=True)
+        serializer = self.get_serializer(user, data=data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)

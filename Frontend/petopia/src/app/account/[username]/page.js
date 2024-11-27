@@ -338,7 +338,7 @@ export default function AccountPage() {
                 />
               </div>
               <div>
-                {user.first_name && user.last_name ? (
+                {user.first_name  ? (
                   <h2 className="text-2xl font-semibold">{user.first_name} {user.last_name}</h2>
                 ) : null}
                 <p className="text-gray-600">@{user.username}</p>

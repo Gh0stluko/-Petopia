@@ -21,6 +21,7 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+// Response interceptor
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -33,7 +34,7 @@ api.interceptors.response.use(
       originalRequest._retry = true;
       try {
         const refreshToken = Cookies.get('refreshToken');
-        const response = await apiClient.post('/token/refresh/', {
+        const response = await api.post('/token/refresh/', {
           refresh: refreshToken,
         });
 
@@ -43,22 +44,19 @@ api.interceptors.response.use(
         Cookies.set('accessToken', newAccessToken, { secure: true, sameSite: 'strict' });
         Cookies.set('refreshToken', newRefreshToken, { secure: true, sameSite: 'strict' });
 
-        apiClient.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;
+        api.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;
         originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
 
-        return apiClient(originalRequest);
+        return api(originalRequest);
       } catch (err) {
         console.error('Error refreshing token:', err);
         Cookies.remove('accessToken');
         Cookies.remove('refreshToken');
-        Cookies.remove('username');
-        // Redirect to home page
-        redirect('/');
+        // Optionally redirect to login page
       }
     }
     return Promise.reject(error);
   }
 );
-
 
 export default api;
