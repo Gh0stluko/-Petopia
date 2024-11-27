@@ -37,6 +37,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     date_birth = models.DateField(blank=True, null=True)
     phone = models.CharField(max_length=25, blank=True)
     gender = models.CharField(max_length=20, blank=True)
+    registration_complete = models.BooleanField(default=False)
     objects = CustomUserManager()
 
     USERNAME_FIELD = 'email'

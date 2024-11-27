@@ -91,9 +91,9 @@ export default function AccountPage() {
   
     if (confirmUsername !== user.username) {
       toast({
+        variant: "destructive",
         title: "Error",
         description: "Username does not match",
-        action: ToastAction.Error,
       })
       return
     
@@ -102,6 +102,7 @@ export default function AccountPage() {
     {
       const response = await api.post('/delete-account/')
       toast({
+        variant: "success",
         title: "Success",
         description: "Your account has been successfully deleted.",
         action: ToastAction.Success,
@@ -113,6 +114,7 @@ export default function AccountPage() {
       router.push('/')
     } catch (error) {
       toast({
+        variant: "destructive",
         title: "Error",
         description: "An error occurred while deleting your account",
         action: ToastAction.Error,
@@ -167,7 +169,7 @@ export default function AccountPage() {
         toast({
           title: "Success",
           description: "Your password has been successfully changed.",
-          action: ToastAction.Success,
+          action: ToastAction.success,
         })
         // Clear the form
         e.target.reset()

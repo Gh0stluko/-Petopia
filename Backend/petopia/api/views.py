@@ -1,3 +1,4 @@
+import datetime
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -46,7 +47,6 @@ def RegisterView(request):
         username = request.data.get('username')
         email = request.data.get('email')
         password = request.data.get('password')
-        print(username, email, password)
         if CustomUser.objects.filter(email=email).exists():
             return Response({"error": "Email already exists"}, status=status.HTTP_400_BAD_REQUEST)
         if CustomUser.objects.filter(username=username).exists():
@@ -54,6 +54,7 @@ def RegisterView(request):
         
         user = CustomUser(username=username, email=email)
         user.set_password(password)
+        user.date_joined = datetime.datetime.now()
         user.save()
 
         return Response({"message": "User registered successfully"}, status=status.HTTP_201_CREATED)
@@ -199,7 +200,6 @@ def google_auth(request):
         userid = idinfo['sub']
         email = idinfo['email']
         name = idinfo.get('name', '')
-        print(email, name)
         # Check if the user exists
         email_prefix = email.split('@')[0]
         user, created = User.objects.get_or_create(email=email)
@@ -208,6 +208,7 @@ def google_auth(request):
             user.username = email_prefix  # or use some logic to generate a username
             user.first_name = name.split()[0] if name else ''
             user.last_name = name.split()[-1] if name else ''
+            user.date_joined = datetime.datetime.now()
             user.save()
 
         # Here you would typically create a session or return a token
