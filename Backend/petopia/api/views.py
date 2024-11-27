@@ -1,4 +1,4 @@
-import datetime
+from django.utils import timezone
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -10,7 +10,45 @@ from .models import CustomUser, Product, Image, Animal_Category,Item_Category, C
 from rest_framework import viewsets
 from .serializer import CustomUserSerializer, ProductSerializer, ImageSerializer, AnimalSerializer,ItemSerialiazer, CartSerializer
 
-    
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def profile_complete(request):
+    try:
+
+        user = request.user
+        username = request.data.get('username')
+        password = request.data.get('password')
+        gender = request.data.get('gender')
+        dateOfBirth = request.data.get('dateOfBirth')
+        firstName = request.data.get('firstName')
+        lastName = request.data.get('lastName')
+        avatar = request.FILES.get('avatar')
+        print(avatar)
+        if User.objects.filter(username=username).exclude(id=user.id).exists():
+            return Response(
+                {'error': 'Username already taken'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        user.username = username
+        user.set_password(password)
+        user.gender = gender
+        if dateOfBirth:
+
+            user.date_birth = dateOfBirth
+        user.first_name = firstName
+        user.last_name = lastName
+
+        user.avatar = avatar  # Directly assign the file
+
+        user.registration_complete = True
+        user.save()
+        
+        return Response({'message': 'Profile completed successfully'}, status=status.HTTP_200_OK)
+    except Exception as e:
+        print(e)
+        return Response({'error': 'An error occurred while completing profile'}, status=status.HTTP_400_BAD_REQUEST)
+
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def LoginView(request):
@@ -54,7 +92,7 @@ def RegisterView(request):
         
         user = CustomUser(username=username, email=email)
         user.set_password(password)
-        user.date_joined = datetime.datetime.now()
+        user.date_joined = timezone.now()
         user.save()
 
         return Response({"message": "User registered successfully"}, status=status.HTTP_201_CREATED)
@@ -69,7 +107,7 @@ def change_password(request):
         new_password = request.data.get('new_password')
         if not user.check_password(old_password):
             print("old password is incorrect")
-            return Response({'error': 'Old password is incorrect'}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({'error': 'Old password is incorrect'}, status=status.HTTP_400_BAD_REQUEST)
         user.set_password(new_password)
         user.save()
         return Response({'message': 'Password changed successfully'}, status=status.HTTP_200_OK)
@@ -188,7 +226,6 @@ User = get_user_model()
 @permission_classes([AllowAny])
 def google_auth(request):
     access_token = request.data.get('google_token')
-    print(access_token)
     try:
         # Specify the CLIENT_ID of your app that you get from the Google Developer Console
         idinfo = id_token.verify_oauth2_token(access_token, requests.Request(), settings.GOOGLE_OAUTH2_CLIENT_ID)
@@ -205,10 +242,9 @@ def google_auth(request):
         user, created = User.objects.get_or_create(email=email)
         
         if created:
-            user.username = email_prefix  # or use some logic to generate a username
             user.first_name = name.split()[0] if name else ''
             user.last_name = name.split()[-1] if name else ''
-            user.date_joined = datetime.datetime.now()
+            user.date_joined = timezone.now()
             user.save()
 
         # Here you would typically create a session or return a token

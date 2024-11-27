@@ -54,12 +54,11 @@ export default function HomePage() {
         setAnimalCategories(animalCategoriesRes.data);
         setItemCategories(itemCategoriesRes.data);
         setProducts(productsRes.data);
-
         const accessToken = Cookies.get('accessToken');
         if (accessToken) {
           const userRes = await api.get('/user/me/');
           setUser(userRes.data);
-          
+                    
         }
 
         setIsLoading(false);
@@ -189,34 +188,45 @@ export default function HomePage() {
               )}
             </div>
             <div className="relative">
-            {User ? (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => {
-                    setIsMenuOpen(!isMenuOpen)
-                  }}
-                  aria-expanded={isMenuOpen}
-                  aria-haspopup="true"
-                >
-                    <Avatar className="w-8 h-8">
-                    <AvatarImage src={User.avatar} alt="User Avatar" />
-                    <AvatarFallback>{User.first_name?.[0]}{User.last_name?.[0]}</AvatarFallback>
-                    </Avatar>
-                  <span className="sr-only">User menu</span>
-                </Button>
-              ) : (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => {
-                  router.push('/account/auth');
-                }}
-              >
-                <UserCircle className="h-6 w-6" />
-                <span className="sr-only">Login</span>
-              </Button>
-            )}
+            {User && User.registration_complete ? (
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => {
+            setIsMenuOpen(!isMenuOpen)
+          }}
+          aria-expanded={isMenuOpen}
+          aria-haspopup="true"
+        >
+          <Avatar className="w-8 h-8">
+            <AvatarImage src={User.avatar} alt="User Avatar" />
+            <AvatarFallback>{User.first_name?.[0]}{User.last_name?.[0]}</AvatarFallback>
+          </Avatar>
+          <span className="sr-only">User menu</span>
+        </Button>
+      ) : User && !User.registration_complete ? (
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => {
+            router.push('account/auth/verification');
+          }}
+        >
+          <UserCircle className="h-6 w-6" />
+          <span className="sr-only">Complete Profile</span>
+        </Button>
+      ) : (
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => {
+            router.push('/account/auth');
+          }}
+        >
+          <UserCircle className="h-6 w-6" />
+          <span className="sr-only">Login</span>
+        </Button>
+      )}
               
               {isMenuOpen && User && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10">

@@ -44,14 +44,18 @@ export default function AccountPage() {
       router.push('/account/auth')
     }
 
-    setIsLoading(true)
     api.get('/user/me').then((res) => {
       setUser(res.data)
-      setCountry(res.data.country || 'US')
+      if (res.data.registration_complete === true) {
+        setIsLoading(false)
+      } else {
+        router.push('/account/auth/verification')
+      }
+    }).catch((error) => {
+      console.error('Error fetching user data:', error)
       setIsLoading(false)
     })
   }, [router])
-
   // Mock order history
   const orders = []
 
@@ -185,7 +189,7 @@ export default function AccountPage() {
       }
     } catch (error) {
       console.error('Error changing password:', error)
-      if (error.response && error.response.status === 401) {
+      if (error.response && error.response.status === 400) {
         setPasswordError('Current password is incorrect')
       } else
       if (error.response && error.response.data && error.response.data.detail) {

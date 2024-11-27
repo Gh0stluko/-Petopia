@@ -20,7 +20,7 @@ export default function AuthPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [activeTab, setActiveTab] = useState("login")
   const [error, setError] = useState("")
-  
+  const [user, setUser] = useState(null)
   const router = useRouter()
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword)
@@ -34,12 +34,24 @@ export default function AuthPage() {
 
       if (res.status === 200) {
         const { access, refresh, name } = res.data;
-        console.log(access, refresh); 
+
         Cookies.set('accessToken', access);
         Cookies.set('refreshToken', refresh);
         Cookies.set('username', name);
         // Redirect to a protected page
-        router.push('/');
+        api.get('/user/me').then((res) => {
+          setUser(res.data)
+          if (res.data.registration_complete) {
+            router.push('/')
+          }
+          else {
+            router.push('/auth/verification')
+          }
+        }).catch(err => {
+          console.error("Error fetching user data:", err)
+          setError("Failed to load user data. Please try again.")
+        })
+        
       }
     } catch (error) {
       console.error('Login failed:', error);
@@ -87,7 +99,7 @@ export default function AuthPage() {
       await register(username, email, password)
       // Automatically log in after successful registration
       await login(email, password)
-      router.push('/')
+      router.push('auth/verification')
     } catch (err) {
       setError("Registration failed. Please try again.")
     }
