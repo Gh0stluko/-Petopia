@@ -176,10 +176,52 @@ class CustomUserViewSet(viewsets.ModelViewSet):
         else:
             print("error", serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+from django.db.models import Q
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
 
+    def get_queryset(self):
+        queryset = Product.objects.all()
+        
+        # Search query
+        search = self.request.query_params.get('search', '')
+        if search:
+            queryset = queryset.filter(
+                Q(name__icontains=search) |
+                Q(description__icontains=search)
+            )
+
+        # Animal category filter
+        animal_categories = self.request.query_params.getlist('animal_category')
+        if animal_categories:
+            queryset = queryset.filter(Animal_Category__name__in=animal_categories)
+
+        # Item category filter
+        item_categories = self.request.query_params.getlist('item_category')
+        if item_categories:
+            queryset = queryset.filter(Item_Category__name__in=item_categories)
+
+        # Price range filter
+        min_price = self.request.query_params.get('min_price')
+        max_price = self.request.query_params.get('max_price')
+        if min_price:
+            queryset = queryset.filter(price__gte=min_price)
+        if max_price:
+            queryset = queryset.filter(price__lte=max_price)
+
+        # Sorting
+        sort_by = self.request.query_params.get('sort_by')
+        if sort_by:
+            if sort_by == 'price_asc':
+                queryset = queryset.order_by('price')
+            elif sort_by == 'price_desc':
+                queryset = queryset.order_by('-price')
+            elif sort_by == 'newest':
+                queryset = queryset.order_by('-created_at')
+
+        return queryset.distinct()
 class ImageViewSet(viewsets.ModelViewSet):
     queryset = Image.objects.all()
     serializer_class = ImageSerializer
@@ -216,6 +258,9 @@ from google.auth.transport import requests
 from django.conf import settings
 
 User = get_user_model()
+
+
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def google_auth(request):
