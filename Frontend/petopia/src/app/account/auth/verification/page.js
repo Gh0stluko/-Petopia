@@ -69,11 +69,10 @@ export default function SocialLoginCompletion() {
     const hasUpperCase = /[A-Z]/.test(password)
     const hasLowerCase = /[a-z]/.test(password)
     const hasNumbers = /\d/.test(password)
-    const hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)
     const isLongEnough = password.length >= 8
   
-    if (!(hasUpperCase && hasLowerCase && hasNumbers && hasSpecialChar && isLongEnough)) {
-      setPasswordError("Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character")
+    if (!(hasUpperCase && hasLowerCase && hasNumbers && isLongEnough)) {
+      setPasswordError("Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number.")
       return
     }
   

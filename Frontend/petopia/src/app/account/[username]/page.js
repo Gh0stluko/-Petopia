@@ -158,8 +158,13 @@ export default function AccountPage() {
       return
     }
 
-    if (newPassword.length < 8) {
-      setPasswordError('New password must be at least 8 characters long')
+    const hasUpperCase = /[A-Z]/.test(newPassword)
+    const hasLowerCase = /[a-z]/.test(newPassword)
+    const hasNumbers = /\d/.test(newPassword)
+    const isLongEnough = newPassword.length >= 8
+  
+    if (!(hasUpperCase && hasLowerCase && hasNumbers && isLongEnough)) {
+      setPasswordError("Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number.")
       return
     }
 

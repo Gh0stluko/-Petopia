@@ -41,15 +41,16 @@ export default function AuthPage() {
         // Redirect to a protected page
         api.get('/user/me').then((res) => {
           setUser(res.data)
-          if (res.data.registration_complete) {
+          // Explicit boolean check
+          if (res.data.registration_complete === true) {
             router.push('/')
+          } else if (res.data.registration_complete === false) {
+            router.push('/account/auth/verification')
+          } else {
+            // Handle unexpected values
+            console.error('Invalid registration_complete value:', res.data.registration_complete)
+            setError('Something went wrong. Please try again.')
           }
-          else {
-            router.push('/auth/verification')
-          }
-        }).catch(err => {
-          console.error("Error fetching user data:", err)
-          setError("Failed to load user data. Please try again.")
         })
         
       }
@@ -99,7 +100,7 @@ export default function AuthPage() {
       await register(username, email, password)
       // Automatically log in after successful registration
       await login(email, password)
-      router.push('auth/verification')
+      router.push('/account/auth/verification')
     } catch (err) {
       setError("Registration failed. Please try again.")
     }
