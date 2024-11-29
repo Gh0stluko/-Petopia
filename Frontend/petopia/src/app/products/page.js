@@ -66,8 +66,7 @@ export default function SearchPage() {
       }
 
       const filters = {
-        // if searchQuery is empty, it will be ignored and if not empty, it will be included
-        ...(searchQuery.trim() !== '' && { search: '' }),
+        ...(searchQuery && searchQuery.trim() ? { search: searchQuery } : { search: "" }),
         animal_category: selectedAnimalCategories,
         item_category: selectedItemCategories,
         min_price: priceRange.min,
