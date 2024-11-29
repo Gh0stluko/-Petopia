@@ -13,7 +13,7 @@ import api from '@/app/services/api';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useInView } from 'react-intersection-observer';
 import { motion } from 'framer-motion';
-import { debounce } from 'lodash';
+import { debounce, set } from 'lodash';
 import {Slider} from "@nextui-org/react";
 
 const SkeletonLoader = ({ height, width, className }) => (
@@ -46,7 +46,7 @@ export default function SearchPage() {
   const [User, setUser] = useState(null);
   const [cart, setCart] = useState([]);
   const [page, setPage] = useState(1);
-
+  const [isFirstLoad, setIsFirstLoad] = useState(true);
   const { ref, inView } = useInView({
     threshold: 0,
   });
@@ -60,7 +60,11 @@ export default function SearchPage() {
       setMaxPrice(maxPriceResponse.data.max_price);
       setAnimalCategories(animalCategoriesResponse.data);
       setItemCategories(itemCategoriesResponse.data);
-      setPriceRange({ min: 0, max: maxPriceResponse.data.max_price });
+      if (isFirstLoad) {
+        setPriceRange({ min: 0, max: maxPriceResponse.data.max_price });
+        setIsFirstLoad(false);
+      }
+
       const filters = {
         // if searchQuery is empty, it will be ignored and if not empty, it will be included
         ...(searchQuery.trim() !== '' && { search: '' }),
