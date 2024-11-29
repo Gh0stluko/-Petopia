@@ -63,7 +63,7 @@ export default function SearchPage() {
       setPriceRange({ min: 0, max: maxPriceResponse.data.max_price });
       const filters = {
         // if searchQuery is empty, it will be ignored and if not empty, it will be included
-        ...(searchQuery.trim() !== '' && { search: searchQuery }),
+        ...(searchQuery.trim() !== '' && { search: '' }),
         animal_category: selectedAnimalCategories,
         item_category: selectedItemCategories,
         min_price: priceRange.min,

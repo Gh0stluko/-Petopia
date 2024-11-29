@@ -54,6 +54,7 @@ class Product(models.Model):
     stock = models.IntegerField()
     Animal_Category = models.ManyToManyField('Animal_Category')
     Item_Category = models.ManyToManyField('Item_Category')
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name
