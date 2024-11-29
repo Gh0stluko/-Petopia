@@ -14,6 +14,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useInView } from 'react-intersection-observer';
 import { motion } from 'framer-motion';
 import { debounce } from 'lodash';
+import {Slider} from "@nextui-org/react";
 
 const SkeletonLoader = ({ height, width, className }) => (
   <div className={`animate-pulse bg-gray-200 rounded ${className}`} style={{ height, width }}></div>
@@ -40,6 +41,7 @@ export default function SearchPage() {
   const [selectedAnimalCategories, setSelectedAnimalCategories] = useState([]);
   const [selectedItemCategories, setSelectedItemCategories] = useState([]);
   const [priceRange, setPriceRange] = useState({ min: '', max: '' });
+  const [maxPrice, setMaxPrice] = useState(1000);
   const [sortBy, setSortBy] = useState('relevance');
   const [User, setUser] = useState(null);
   const [cart, setCart] = useState([]);
@@ -54,9 +56,11 @@ export default function SearchPage() {
     try {
       const animalCategoriesResponse = await api.get('/animal_categories/');
       const itemCategoriesResponse = await api.get('/item_categories/');
+      const maxPriceResponse = await api.get('/products/max_price/');
+      setMaxPrice(maxPriceResponse.data.max_price);
       setAnimalCategories(animalCategoriesResponse.data);
       setItemCategories(itemCategoriesResponse.data);
-
+      setPriceRange({ min: 0, max: maxPriceResponse.data.max_price });
       const filters = {
         // if searchQuery is empty, it will be ignored and if not empty, it will be included
         ...(searchQuery.trim() !== '' && { search: searchQuery }),
@@ -135,7 +139,11 @@ export default function SearchPage() {
     fetchData();
     setIsFilterOpen(false);
   };
-
+  const clearFilters = () => {
+    setPriceRange({ min: 0, max: maxPrice });
+    setSelectedAnimalCategories([]);
+    setSelectedItemCategories([]);
+  };
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <motion.header className="sticky top-0 z-50 bg-white shadow-sm" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
@@ -237,9 +245,25 @@ export default function SearchPage() {
                     onChange={(e) => setPriceRange({ ...priceRange, max: e.target.value })}
                     className="w-1/2"
                   />
+                  
                 </div>
+                <Slider
+                  label="Price Range"
+                  step={1}
+                  minValue={0}
+                  maxValue={maxPrice}
+                  value={[priceRange.min, priceRange.max]}
+                  onChange={(values) =>
+                    setPriceRange({ min: values[0], max: values[1] })
+                  }
+                  formatOptions={{ style: 'currency', currency: 'USD' }}
+                  className="max-w-md"
+                />
               </div>
               <Button className="w-full" onClick={applyFilters}>Apply Filters</Button>
+              <Button className="w-full mt-2" onClick={clearFilters}>
+                Clear All Filters
+              </Button>
             </motion.aside>
           )}
           <div className="flex-grow">

@@ -182,6 +182,11 @@ class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
 
+    @action(detail=False, methods=['get'], permission_classes=[AllowAny])
+    def max_price(self, request):
+        max_price = Product.objects.all().order_by('-price').first().price
+        return JsonResponse({'max_price': max_price})
+    
     def get_queryset(self):
         queryset = Product.objects.all()
         
