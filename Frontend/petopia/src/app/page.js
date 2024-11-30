@@ -1,19 +1,18 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { motion, useScroll, useTransform } from 'framer-motion'
 import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
+import { Button } from "../components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Search, Plus, Minus } from 'lucide-react'
+import { ShoppingCart, Search, UserCircle, Plus, Minus, Trash2 } from 'lucide-react'
 import api from './services/api'
 import Snowfall from 'react-snowfall'
 import Cookies from 'js-cookie'
 import { useRouter } from 'next/navigation'
-import Header from '@/components/nav'
-
+import { Avatar, AvatarImage, AvatarFallback } from "../components/ui/avatar"
+import Header from "../components/nav"
 const SkeletonLoader = ({ height, width, className }) => (
   <div className={`animate-pulse bg-gray-200 rounded ${className}`} style={{ height, width }}></div>
 );
@@ -31,8 +30,11 @@ const ProductSkeleton = () => (
 )
 
 export default function HomePage() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isCartOpen, setIsCartOpen] = useState(false)
   const [cart, setCart] = useState([])
   const [isLoading, setIsLoading] = useState(false)
+  const cartRef = useRef(null)
   const [animalCategories, setAnimalCategories] = useState([])
   const [itemCategories, setItemCategories] = useState([])
   const [categories, setCategories] = useState([])
@@ -40,13 +42,6 @@ export default function HomePage() {
   const [User, setUser] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
   const router = useRouter()
-
-  const categoriesRef = useRef(null)
-  const productsRef = useRef(null)
-  const { scrollYProgress } = useScroll()
-  const categoriesY = useTransform(scrollYProgress, [0, 0.3], [100, 0])
-  const productsY = useTransform(scrollYProgress, [0.3, 0.6], [100, 0])
-
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
@@ -64,6 +59,7 @@ export default function HomePage() {
         if (accessToken) {
           const userRes = await api.get('/user/me/');
           setUser(userRes.data);
+                    
         }
 
         setIsLoading(false);
@@ -75,7 +71,6 @@ export default function HomePage() {
 
     fetchData();
   }, []);
-
   useEffect(() => {
     setCategories([...animalCategories, ...itemCategories])
   }, [animalCategories, itemCategories])
@@ -91,7 +86,16 @@ export default function HomePage() {
       return [...prevCart, { ...product, quantity: 1 }]
     })
   }
+  useEffect(() => {
+    const savedCart = localStorage.getItem('cart')
+    if (savedCart) {
+      setCart(JSON.parse(savedCart))
+    }
+  }, [])
 
+  useEffect(() => {
+    localStorage.setItem('cart', JSON.stringify(cart))
+  }, [cart])
   const updateQuantity = (id, delta) => {
     setCart(prevCart =>
       prevCart.map(item =>
@@ -112,21 +116,37 @@ export default function HomePage() {
 
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0)
   const totalPrice = cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
-
   const handleSearch = (e) => {
     e.preventDefault()
     if (searchQuery.trim()) {
       router.push(`/products?search=true&q=${searchQuery}`)
     }
   }
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (cartRef.current && !cartRef.current.contains(event.target)) {
+        setIsCartOpen(false)
+      }
+    }
 
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [])
+  const handlelogout = () => {
+    Cookies.remove('accessToken');
+    Cookies.remove('refreshToken');
+    Cookies.remove('username');
+    window.location.href = '/';
+  }
   return (
     <div className="min-h-screen bg-white">
-      <Header 
+      <Header
         cart={cart}
         updateQuantity={updateQuantity}
-        removeFromCart={removeFromCart}
-        clearCart={clearCart}
+        removeFromCart={(id) => setCart(cart.filter(item => item.id !== id))}
+        clearCart={() => setCart([])}
         totalItems={totalItems}
         User={User}
         searchQuery={searchQuery}
@@ -135,7 +155,7 @@ export default function HomePage() {
       />
 
       {/* Hero Section */}
-      <section className="relative h-[80vh] bg-gray-100">
+      <section className="relative h-[60vh] bg-gray-100">
         {isLoading ? (
           <SkeletonLoader className="h-full w-full" />
         ) : (
@@ -144,18 +164,25 @@ export default function HomePage() {
               alt="Petopia"
               src='/banner.jpg'
               fill
-              sizes="100vw"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               style={{ objectFit: 'cover' }}
               priority
             />
             <Snowfall />
             <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-              <div className="text-center text-white">
-                <h1 className="text-5xl font-bold mb-4">Welcome to Petopia</h1>
-                <p className="text-xl mb-8">Your one-stop shop for all pet needs</p>
-                <Button size="lg" onClick={() => document.getElementById('featured-products').scrollIntoView({ behavior: 'smooth' })}>
-                  Shop Now
-                </Button>
+              <div className="w-full max-w-md px-4">
+                <div className="relative">
+                  <form onSubmit={handleSearch} className='relative'>
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 z-10" />
+                  <Input
+                    value={searchQuery}
+                    type="text"
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="I want to discover..."
+                    className="w-full pl-10 pr-4 py-2 rounded-full border-none bg-white bg-opacity-80 backdrop-blur-sm placeholder-gray-500 text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary focus:bg-opacity-100 transition-all"
+                  />
+                  </form>
+                </div>
               </div>
             </div>
           </>
@@ -163,53 +190,38 @@ export default function HomePage() {
       </section>
 
       {/* All Categories */}
-      <motion.section 
-        ref={categoriesRef}
-        style={{ y: categoriesY }}
-        className="py-12"
-      >
+      <section className="py-12">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold mb-8 text-center">Explore Categories</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
+          <h2 className="text-2xl font-semibold mb-6 text-center">All Categories</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
             {isLoading ? (
               Array(6).fill().map((_, index) => (
-                <SkeletonLoader key={index} className="h-24 w-full" />
+                <SkeletonLoader key={index} className="h-10 w-full" />
               ))
             ) : (
               itemCategories.map((category, index) => (
-                <motion.div
-                  key={index}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Button variant="outline" className="w-full h-24 text-lg font-semibold">
-                    {category.name}
-                  </Button>
-                </motion.div>
+                <Button key={index} variant="outline" className="w-full">
+                  {category.name}
+                </Button>
               ))
             )}
           </div>
         </div>
-      </motion.section>
+      </section>
 
       {/* Featured Categories */}
       <section className="py-12 bg-gray-50">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold mb-8 text-center">Featured Categories</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <h2 className="text-2xl font-semibold mb-6 text-center">Featured Categories</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {isLoading ? (
               Array(4).fill().map((_, index) => (
                 <SkeletonLoader key={index} className="h-40 w-full" />
               ))
             ) : (
               categories.slice(0, 4).map((category, index) => (
-                <motion.div 
-                  key={index} 
-                  className="group cursor-pointer"
-                  whileHover={{ scale: 1.05 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                >
-                  <div className="relative h-40 bg-gray-200 rounded-lg overflow-hidden">
+                <div key={index} className="group cursor-pointer">
+                  <div className="relative h-40 bg-gray-200 rounded-lg overflow-hidden transition-transform duration-300 group-hover:scale-105">
                     <Image
                       src={category.image}
                       alt={category.name}
@@ -221,103 +233,98 @@ export default function HomePage() {
                       <span className="text-white font-semibold text-lg">{category.name}</span>
                     </div>
                   </div>
-                </motion.div>
+                </div>
               ))
             )}
           </div>
         </div>
       </section>
-
-      {/* Featured Products */}
-      <motion.section 
-        ref={productsRef}
-        style={{ y: productsY }}
-        className="py-12"
-        id="featured-products"
-      >
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold mb-8 text-center">Featured Products</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {isLoading ? (
-              Array(4).fill().map((_, index) => (
-                <ProductSkeleton key={index} />
-              ))
-            ) : (
-              products.slice(0,8).map((product) => (
-                <motion.div
-                  key={product.id}
-                  whileHover={{ y: -5 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                >
-                  <Card className="h-full transition-shadow duration-300 hover:shadow-lg">
-                    <div className="relative h-48">
-                      {product.images && product.images.length > 0 ? (
-                        <Image
-                          src={product.images[0].image}
-                          alt={product.name}
-                          fill
-                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-                          style={{ objectFit: 'cover' }}
-                        />
-                      ) : (
-                        <div className="h-full w-full bg-gray-200 flex items-center justify-center">
-                          <span>No Image</span>
-                        </div>
-                      )}
+      <section className="py-12">
+      <div className="container mx-auto px-4">
+        <h2 className="text-2xl font-semibold mb-6 text-center">Featured Products</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {isLoading ? (
+            Array(4).fill().map((_, index) => (
+              <Card key={index} className="flex flex-col justify-between h-full">
+                <div className="animate-pulse bg-gray-200 h-48 w-full"></div>
+                <CardContent className="p-4 flex-grow flex flex-col">
+                  <div className="animate-pulse bg-gray-200 h-6 w-3/4 mb-2"></div>
+                  <div className="mt-auto">
+                    <div className="animate-pulse bg-gray-200 h-4 w-1/4 mb-2"></div>
+                    <div className="animate-pulse bg-gray-200 h-10 w-full"></div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          ) : (
+            products.slice(0,8).map((product) => (
+              <Card key={product.id} className="flex flex-col justify-between h-full transition-shadow duration-300 hover:shadow-lg">
+                <div className="relative h-48">
+                  {product.images && product.images.length > 0 ? (
+                    <Image
+                      src={product.images[0].image}
+                      alt={product.name}
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                      style={{ objectFit: 'cover' }}
+                    />
+                  ) : (
+                    <div className="h-full w-full bg-gray-200 flex items-center justify-center">
+                      <span>No Image</span>
                     </div>
-                    <CardContent className="p-4 flex flex-col justify-between h-[calc(100%-12rem)]">
-                      <Link href={`/product/${product.id}`} className="font-semibold text-lg mb-2 hover:underline">
-                        {product.name}
-                      </Link>
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="font-semibold text-xl">
-                            {!isNaN(parseFloat(product.price)) ? parseFloat(product.price).toFixed(2) : '0.00'} грн
-                          </span>
-                        </div>
-                        {cart.find(item => item.id === product.id) ? (
-                          <div className="flex items-center justify-between">
-                            <Button variant="outline" size="icon" onClick={() => updateQuantity(product.id, -1)}>
-                              <Minus className="h-4 w-4" />
-                            </Button>
-                            <span>{cart.find(item => item.id === product.id).quantity}</span>
-                            <Button variant="outline" size="icon" onClick={() => updateQuantity(product.id, 1)}>
-                              <Plus className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        ) : (
-                          <Button className="w-full" onClick={() => addToCart(product)}>Add to Cart</Button>
-                        )}
+                  )}
+                </div>
+                <CardContent className="p-4 flex-grow flex flex-col">
+                  <Link href={`/product/${product.id}`} className="font-semibold text-lg mb-2 hover:underline">
+                    {product.name}
+                  </Link>
+                  <div className="mt-auto">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-semibold">
+                        {!isNaN(parseFloat(product.price)) ? parseFloat(product.price).toFixed(2) : '0.00'} грн
+                      </span>
+                    </div>
+                    {cart.find(item => item.id === product.id) ? (
+                      <div className="flex items-center justify-between">
+                        <Button variant="outline" size="icon" onClick={() => updateQuantity(product.id, -1)}>
+                          <Minus className="h-4 w-4" />
+                        </Button>
+                        <span>{cart.find(item => item.id === product.id).quantity}</span>
+                        <Button variant="outline" size="icon" onClick={() => updateQuantity(product.id, 1)}>
+                          <Plus className="h-4 w-4" />
+                        </Button>
                       </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))
-            )}
-          </div>
+                    ) : (
+                      <Button className="w-full" onClick={() => addToCart(product)}>Add to Cart</Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
         </div>
-      </motion.section>
-
-      <footer className="bg-gray-100">
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="flex items-center mb-4 md:mb-0">
-              <Image src="/logo.svg" alt="Petopia" width={40} height={40} />
-              <span className="ml-2 text-xl font-bold text-gray-800">Petopia</span>
-            </div>
-            <nav className="flex flex-wrap justify-center md:justify-end gap-4">
-              <Link href="#" className="text-gray-600 hover:text-gray-800">About Us</Link>
-              <Link href="#" className="text-gray-600 hover:text-gray-800">Contact</Link>
-              <Link href="#" className="text-gray-600 hover:text-gray-800">Terms of Service</Link>
-              <Link href="#" className="text-gray-600 hover:text-gray-800">Privacy Policy</Link>
-            </nav>
+      </div>
+    </section>
+    <footer className="bg-gray-100">
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col md:flex-row justify-between items-center">
+          <div className="flex items-center mb-4 md:mb-0">
+            <Image src="/logo.svg" alt="Petopia" width={40} height={40} />
+            <span className="ml-2 text-xl font-bold text-gray-800">Petopia</span>
           </div>
-          <div className="mt-8 text-center text-gray-500 text-sm">
-            © {new Date().getFullYear()} Petopia. All rights reserved.
-          </div>
+          <nav className="flex flex-wrap justify-center md:justify-end gap-4">
+            <Link href="#" className="text-gray-600 hover:text-gray-800">About Us</Link>
+            <Link href="#" className="text-gray-600 hover:text-gray-800">Contact</Link>
+            <Link href="#" className="text-gray-600 hover:text-gray-800">Terms of Service</Link>
+            <Link href="#" className="text-gray-600 hover:text-gray-800">Privacy Policy</Link>
+          </nav>
         </div>
-      </footer>
+        <div className="mt-8 text-center text-gray-500 text-sm">
+          © {new Date().getFullYear()} Petopia. All rights reserved.
+        </div>
+      </div>
+    </footer>
     </div>
+    
   )
 }
-
