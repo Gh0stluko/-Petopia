@@ -134,12 +134,6 @@ export default function HomePage() {
       document.removeEventListener("mousedown", handleClickOutside)
     }
   }, [])
-  const handlelogout = () => {
-    Cookies.remove('accessToken');
-    Cookies.remove('refreshToken');
-    Cookies.remove('username');
-    window.location.href = '/';
-  }
   return (
     <div className="min-h-screen bg-white">
       <Header

@@ -97,7 +97,7 @@ export default function Header({
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
                     transition={{ duration: 0.2 }}
-                    className="absolute right-0 mt-2 w-96 bg-background rounded-md shadow-lg z-50"
+                    className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl z-50 overflow-hidden"
                   >
                     <div className="p-4">
                       <h2 className="text-lg font-bold mb-4">Your Cart</h2>
@@ -107,10 +107,14 @@ export default function Header({
                         <>
                           <div className="max-h-96 overflow-y-auto">
                             {cart.map((item) => (
-                              <div key={item.id} className="flex items-center justify-between mb-4">
-                                <h3 className="font-semibold">{item.name}</h3>
+                              <div key={item.id} className="flex items-center justify-between mb-4 border-b border-gray-200 pb-2">
                                 <div className="flex items-center">
-                                  <Button variant="outline" size="icon" onClick={() => updateQuantity(item.id, -1)}>
+                                  <Image src={item.images[0].image} alt={item.name} width={50} height={50} className="rounded-md mr-3" />
+                                  <h3 className="font-semibold">{item.name}</h3>
+                                </div>
+                                <div className="flex items-center">
+                                  <span className="text-gray-600">${Math.floor(item.price)}</span>
+                                  <Button variant="outline" size="icon" onClick={() => updateQuantity(item.id, -1)} className="mx-2">
                                     <Minus className="h-4 w-4" />
                                   </Button>
                                   <span className="mx-2">{item.quantity}</span>
@@ -123,6 +127,10 @@ export default function Header({
                                 </div>
                               </div>
                             ))}
+                          </div>
+                          <div className="mt-4 flex justify-between font-bold">
+                            <span>Total:</span>
+                            <span>${cart.reduce((total, item) => total + item.price * item.quantity, 0).toFixed(2)}</span>
                           </div>
                           <div className="mt-4 flex justify-between">
                             <Button variant="outline" onClick={clearCart}>Clear Cart</Button>
@@ -161,7 +169,6 @@ export default function Header({
                 <UserCircle className="h-5 w-5" />
               </Button>
             )}
-
           </nav>
         </div>
       </div>
