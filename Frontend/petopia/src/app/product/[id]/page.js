@@ -49,7 +49,7 @@ export default function ProductPage() {
       setIsAnimating(true);
       setDirection(newDirection);
       setSelectedImage(newIndex);
-      setTimeout(() => setIsAnimating(false), 400); // Match this with your animation duration
+      setTimeout(() => setIsAnimating(false), 600); // Match this with your animation duration
     }
   }, [isAnimating, product]);
 
