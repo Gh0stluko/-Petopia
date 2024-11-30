@@ -28,7 +28,8 @@ export default function Header({
   User, 
   searchQuery, 
   setSearchQuery, 
-  handleSearch 
+  handleSearch ,
+  Search_Included=false
 }) {
   const [isCartOpen, setIsCartOpen] = useState(false)
   const cartRef = useRef(null)
@@ -65,18 +66,18 @@ export default function Header({
             </div>
             <span className="font-bold text-xl hidden sm:inline-block">Petopia</span>
           </Link>
-
-          {/* Search Bar */}
-          <form onSubmit={handleSearch} className="hidden md:flex relative w-full max-w-sm mx-4">
-            <Input
-              type="text"
-              placeholder="Search products..."
-              className="pl-10 pr-4 py-2 w-full"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-          </form>
+            {Search_Included === true && (
+              <form onSubmit={handleSearch} className="hidden md:flex relative w-full max-w-sm mx-4">
+                <Input
+                  type="text"
+                  placeholder="Search products..."
+                  className="pl-10 pr-4 py-2 w-full"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+              </form>
+            )}
 
           {/* Navigation */}
           <nav className="flex items-center space-x-4">
