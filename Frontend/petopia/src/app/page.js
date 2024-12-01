@@ -33,11 +33,6 @@ export default function HomePage() {
   const [User, setUser] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
   const router = useRouter()
-  const [displayCount, setDisplayCount] = useState(8)
-
-  const showAllCategories = () => {
-    setDisplayCount(categories.length)
-  }
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
@@ -184,40 +179,59 @@ export default function HomePage() {
 
       {/* All Categories */}
       <section className="py-12 bg-gray-50">
-      <div className="container mx-auto px-4">
-        <h2 className="text-2xl font-semibold mb-6 text-center">All Categories</h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
-          {isLoading
-            ? Array(8).fill(null).map((_, index) => (
-                <SkeletonLoader key={index} className="h-40 w-full" />
-              ))
-            : categories.slice(0, displayCount).map((category, idx) => (
-                <div key={`category-${category.id}-${idx}`} className="group cursor-pointer">
+  <div className="container mx-auto px-4">
+    <h2 className="text-2xl font-semibold mb-6 text-center">All Categories</h2>
+    {isLoading ? (
+      <Carousel>
+        <CarouselContent>
+          {Array(4).fill().map((_, index) => (
+            <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/4">
+              <Card>
+                <CardContent className="p-0">
+                  <SkeletonLoader className="h-40 w-full" />
+                </CardContent>
+              </Card>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+      </Carousel>
+    ) : (
+      <Carousel>
+        <CarouselContent>
+          {categories.map((category, index) => (
+            <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/4">
+              <Card className="group cursor-pointer">
+                <CardContent className="p-0">
                   <div className="relative h-40 bg-gray-200 rounded-lg overflow-hidden transition-transform duration-300 group-hover:scale-105">
                     <Image
                       src={category.image}
                       alt={category.name}
                       fill
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw, 25vw"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                       style={{ objectFit: 'cover' }}
                     />
                     <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                       <span className="text-white font-semibold text-lg">{category.name}</span>
                     </div>
                   </div>
-                </div>
-              ))
-          }
-        </div>
-        {!isLoading && categories.length > 8 && (
-          <div className="text-center">
-            <Button onClick={handleShowAllCategories} variant="outline">
-              {showAll ? 'Show Less' : 'Show All Categories'}
-            </Button>
-          </div>
-        )}
-      </div>
-    </section>
+                </CardContent>
+              </Card>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+        <CarouselPrevious />
+        <CarouselNext />
+      </Carousel>
+    )}
+  </div>
+</section>
+
+{/* New Products */}
+
+
+
+{/* Featured Products */}
+
       <section className="py-12">
 
 
