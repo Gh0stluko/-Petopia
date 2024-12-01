@@ -1,64 +1,69 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
+import { Button } from "../components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel"
-import { Search, Plus, Minus, ChevronRight, Star } from 'lucide-react'
-import Header from "@/components/nav"
-import Footer from '@/components/Footer'
+import { ShoppingCart, Search, UserCircle, Plus, Minus, Trash2 } from 'lucide-react'
 import api from './services/api'
-
+import Snowfall from 'react-snowfall'
+import Cookies from 'js-cookie'
+import { useRouter } from 'next/navigation'
+import { Avatar, AvatarImage, AvatarFallback } from "../components/ui/avatar"
+import Header from "../components/nav"
+import Footer from '@/components/Footer'
 const SkeletonLoader = ({ height, width, className }) => (
   <div className={`animate-pulse bg-gray-200 rounded ${className}`} style={{ height, width }}></div>
 );
 
+
 export default function HomePage() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isCartOpen, setIsCartOpen] = useState(false)
+  const [cart, setCart] = useState([])
   const [isLoading, setIsLoading] = useState(false)
+  const cartRef = useRef(null)
   const [animalCategories, setAnimalCategories] = useState([])
   const [itemCategories, setItemCategories] = useState([])
+  const [categories, setCategories] = useState([])
   const [products, setProducts] = useState([])
-  const [showAllCategories, setShowAllCategories] = useState(false)
-  const [cart, setCart] = useState([])
   const [User, setUser] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
-
+  const router = useRouter()
   useEffect(() => {
     const fetchData = async () => {
-      setIsLoading(true)
+      setIsLoading(true);
       try {
         const [animalCategoriesRes, itemCategoriesRes, productsRes] = await Promise.all([
           api.get('/animal_categories/'),
           api.get('/item_categories/'),
           api.get('/products/')
-        ])
+        ]);
 
-        setAnimalCategories(animalCategoriesRes.data)
-        setItemCategories(itemCategoriesRes.data)
-        // Sort products by rating
-        const sortedProducts = productsRes.data.sort((a, b) => 
-          (b.average_rating === "no review" ? 0 : b.average_rating) - 
-          (a.average_rating === "no review" ? 0 : a.average_rating)
-        )
-        setProducts(sortedProducts)
-        setIsLoading(false)
+        setAnimalCategories(animalCategoriesRes.data);
+        setItemCategories(itemCategoriesRes.data);
+        setProducts(productsRes.data);
+        const accessToken = Cookies.get('accessToken');
+        if (accessToken) {
+          const userRes = await api.get('/user/me/');
+          setUser(userRes.data);
+                    
+        }
+
+        setIsLoading(false);
       } catch (error) {
-        console.error('Error fetching data:', error)
-        setIsLoading(false)
+        console.error('Error fetching data:', error);
+        setIsLoading(false);
       }
-    }
+    };
 
-    fetchData()
-  }, [])
+    fetchData();
+  }, []);
+  useEffect(() => {
+    setCategories([...animalCategories, ...itemCategories])
+  }, [animalCategories, itemCategories])
 
   const addToCart = (product) => {
     setCart(prevCart => {
@@ -71,7 +76,16 @@ export default function HomePage() {
       return [...prevCart, { ...product, quantity: 1 }]
     })
   }
+  useEffect(() => {
+    const savedCart = localStorage.getItem('cart')
+    if (savedCart) {
+      setCart(JSON.parse(savedCart))
+    }
+  }, [])
 
+  useEffect(() => {
+    localStorage.setItem('cart', JSON.stringify(cart))
+  }, [cart])
   const updateQuantity = (id, delta) => {
     setCart(prevCart =>
       prevCart.map(item =>
@@ -82,17 +96,34 @@ export default function HomePage() {
     )
   }
 
+  const removeFromCart = (id) => {
+    setCart(prevCart => prevCart.filter(item => item.id !== id))
+  }
+
+  const clearCart = () => {
+    setCart([])
+  }
+
+  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0)
+  const totalPrice = cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
   const handleSearch = (e) => {
     e.preventDefault()
     if (searchQuery.trim()) {
       router.push(`/products?search=true&q=${searchQuery}`)
     }
   }
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (cartRef.current && !cartRef.current.contains(event.target)) {
+        setIsCartOpen(false)
+      }
+    }
 
-  const displayedCategories = showAllCategories 
-    ? itemCategories 
-    : itemCategories.slice(0, 8)
-
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [])
   return (
     <div className="min-h-screen bg-white">
       <Header
@@ -100,225 +131,167 @@ export default function HomePage() {
         updateQuantity={updateQuantity}
         removeFromCart={(id) => setCart(cart.filter(item => item.id !== id))}
         clearCart={() => setCart([])}
-        totalItems={cart.reduce((sum, item) => sum + item.quantity, 0)}
+        totalItems={totalItems}
         User={User}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         handleSearch={handleSearch}
-        Search_Included={false}
+        Search_Included={true}
       />
 
-      {/* Hero Carousel */}
-      <section className="relative">
-        <Carousel className="w-full">
-          <CarouselContent>
-            <CarouselItem>
-              <div className="relative h-[500px] w-full">
-                <div className="absolute inset-0 bg-gradient-to-r from-green-600 to-transparent" />
-                <Image
-                  src="/banner.jpg"
-                  alt="Special Offer"
-                  fill
-                  className="object-cover"
-                  priority
-                />
-                <div className="absolute inset-0 flex items-center">
-                  <div className="container mx-auto px-4">
-                    <div className="max-w-lg">
-                      <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
-                        Black Friday Sale
-                      </h1>
-                      <p className="text-xl text-white mb-8">
-                        Up to 50% off on selected items
-                      </p>
-                      <Button size="lg" className="bg-white text-green-600 hover:bg-gray-100">
-                        Shop Now
-                      </Button>
+      {/* Hero Section */}
+      <section className="relative h-[60vh] bg-gray-100">
+        {isLoading ? (
+          <SkeletonLoader className="h-full w-full" />
+        ) : (
+          <>
+            <Image
+              alt="Petopia"
+              src='/banner.jpg'
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              style={{ objectFit: 'cover' }}
+              priority
+            />
+            <Snowfall />
+            <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+              <div className="w-full max-w-md px-4">
+                <div className="relative">
+                  <form onSubmit={handleSearch} className='relative'>
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 z-10" />
+                  <Input
+                    value={searchQuery}
+                    type="text"
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="I want to discover..."
+                    className="w-full pl-10 pr-4 py-2 rounded-full border-none bg-white bg-opacity-80 backdrop-blur-sm placeholder-gray-500 text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary focus:bg-opacity-100 transition-all"
+                  />
+                  </form>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+      </section>
+
+      {/* All Categories */}
+      <section className="py-12">
+        <div className="container mx-auto px-4">
+          <h2 className="text-2xl font-semibold mb-6 text-center">All Categories</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {isLoading ? (
+              Array(6).fill().map((_, index) => (
+                <SkeletonLoader key={index} className="h-10 w-full" />
+              ))
+            ) : (
+              itemCategories.map((category, index) => (
+                <Button key={index} variant="outline" className="w-full">
+                  {category.name}
+                </Button>
+              ))
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Categories */}
+      <section className="py-12 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <h2 className="text-2xl font-semibold mb-6 text-center">Featured Categories</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {isLoading ? (
+              Array(4).fill().map((_, index) => (
+                <SkeletonLoader key={index} className="h-40 w-full" />
+              ))
+            ) : (
+              categories.slice(0, 4).map((category, index) => (
+                <div key={index} className="group cursor-pointer">
+                  <div className="relative h-40 bg-gray-200 rounded-lg overflow-hidden transition-transform duration-300 group-hover:scale-105">
+                    <Image
+                      src={category.image}
+                      alt={category.name}
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                      style={{ objectFit: 'cover' }}
+                    />
+                    <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <span className="text-white font-semibold text-lg">{category.name}</span>
                     </div>
                   </div>
                 </div>
-              </div>
-            </CarouselItem>
-            {/* Add more carousel items as needed */}
-          </CarouselContent>
-          <CarouselPrevious />
-          <CarouselNext />
-        </Carousel>
-      </section>
-
-      {/* Categories */}
-      <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-3xl font-bold">Shop by Category</h2>
-            {itemCategories.length > 8 && (
-              <Button
-                variant="ghost"
-                onClick={() => setShowAllCategories(!showAllCategories)}
-                className="text-green-600 hover:text-green-700"
-              >
-                {showAllCategories ? 'Show Less' : 'Show All Categories'}
-                <ChevronRight className="ml-2 h-4 w-4" />
-              </Button>
-            )}
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {isLoading ? (
-              Array(8).fill().map((_, i) => (
-                <SkeletonLoader key={i} className="h-32 w-full" />
-              ))
-            ) : (
-              displayedCategories.map((category, index) => (
-                <Link 
-                  key={category.id} 
-                  href={`/category/${category.id}`}
-                  className="group relative overflow-hidden rounded-lg"
-                >
-                  <div className="relative h-32">
-                    <Image
-                      src={category.image || '/placeholder.svg'}
-                      alt={category.name}
-                      fill
-                      className="object-cover transition-transform group-hover:scale-110"
-                    />
-                    <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors" />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-white text-xl font-semibold">
-                        {category.name}
-                      </span>
-                    </div>
-                  </div>
-                </Link>
               ))
             )}
           </div>
         </div>
       </section>
-
-      {/* Popular Products */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold mb-8">Popular Products</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {isLoading ? (
-              Array(8).fill().map((_, i) => (
-                <Card key={i} className="flex flex-col">
-                  <SkeletonLoader className="h-48 rounded-t-lg" />
-                  <CardContent className="p-4">
-                    <SkeletonLoader className="h-6 w-3/4 mb-2" />
-                    <SkeletonLoader className="h-4 w-1/4 mb-4" />
-                    <SkeletonLoader className="h-10 w-full" />
-                  </CardContent>
-                </Card>
-              ))
-            ) : (
-              products.slice(0, 8).map((product) => (
-                <Card key={product.id} className="flex flex-col h-full group">
-                  <div className="relative h-48 overflow-hidden rounded-t-lg">
+      <section className="py-12">
+      <div className="container mx-auto px-4">
+        <h2 className="text-2xl font-semibold mb-6 text-center">Featured Products</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {isLoading ? (
+            Array(4).fill().map((_, index) => (
+              <Card key={index} className="flex flex-col justify-between h-full">
+                <div className="animate-pulse bg-gray-200 h-48 w-full"></div>
+                <CardContent className="p-4 flex-grow flex flex-col">
+                  <div className="animate-pulse bg-gray-200 h-6 w-3/4 mb-2"></div>
+                  <div className="mt-auto">
+                    <div className="animate-pulse bg-gray-200 h-4 w-1/4 mb-2"></div>
+                    <div className="animate-pulse bg-gray-200 h-10 w-full"></div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          ) : (
+            products.slice(0,8).map((product) => (
+              <Card key={product.id} className="flex flex-col justify-between h-full transition-shadow duration-300 hover:shadow-lg">
+                <div className="relative h-48">
+                  {product.images && product.images.length > 0 ? (
                     <Image
-                      src={product.images?.[0]?.image || '/placeholder.svg'}
+                      src={product.images[0].image}
                       alt={product.name}
                       fill
-                      className="object-cover transition-transform group-hover:scale-110"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                      style={{ objectFit: 'cover' }}
                     />
-                    {product.average_rating !== "no review" && (
-                      <div className="absolute top-2 right-2 bg-white rounded-full p-1 shadow-lg">
-                        <div className="flex items-center gap-1">
-                          <Star className="h-4 w-4 fill-yellow-400 stroke-yellow-400" />
-                          <span className="text-sm font-medium">{product.average_rating}</span>
-                        </div>
+                  ) : (
+                    <div className="h-full w-full bg-gray-200 flex items-center justify-center">
+                      <span>No Image</span>
+                    </div>
+                  )}
+                </div>
+                <CardContent className="p-4 flex-grow flex flex-col">
+                  <Link href={`/product/${product.id}`} className="font-semibold text-lg mb-2 hover:underline">
+                    {product.name}
+                  </Link>
+                  <div className="mt-auto">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-semibold">
+                        {!isNaN(parseFloat(product.price)) ? parseFloat(product.price).toFixed(2) : '0.00'} грн
+                      </span>
+                    </div>
+                    {cart.find(item => item.id === product.id) ? (
+                      <div className="flex items-center justify-between">
+                        <Button variant="outline" size="icon" onClick={() => updateQuantity(product.id, -1)}>
+                          <Minus className="h-4 w-4" />
+                        </Button>
+                        <span>{cart.find(item => item.id === product.id).quantity}</span>
+                        <Button variant="outline" size="icon" onClick={() => updateQuantity(product.id, 1)}>
+                          <Plus className="h-4 w-4" />
+                        </Button>
                       </div>
+                    ) : (
+                      <Button className="w-full" onClick={() => addToCart(product)}>Add to Cart</Button>
                     )}
                   </div>
-                  <CardContent className="p-4 flex-grow flex flex-col">
-                    <Link href={`/product/${product.id}`} className="font-semibold text-lg mb-2 hover:text-green-600">
-                      {product.name}
-                    </Link>
-                    <div className="mt-auto">
-                      <div className="flex items-center justify-between mb-4">
-                        <span className="text-xl font-bold">
-                          {parseFloat(product.price).toFixed(2)} грн
-                        </span>
-                      </div>
-                      {cart.find(item => item.id === product.id) ? (
-                        <div className="flex items-center justify-between">
-                          <Button 
-                            variant="outline" 
-                            size="icon"
-                            onClick={() => updateQuantity(product.id, -1)}
-                          >
-                            <Minus className="h-4 w-4" />
-                          </Button>
-                          <span className="font-medium">
-                            {cart.find(item => item.id === product.id).quantity}
-                          </span>
-                          <Button 
-                            variant="outline" 
-                            size="icon"
-                            onClick={() => updateQuantity(product.id, 1)}
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ) : (
-                        <Button 
-                          className="w-full bg-green-600 hover:bg-green-700" 
-                          onClick={() => addToCart(product)}
-                        >
-                          Add to Cart
-                        </Button>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
-            )}
-          </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
         </div>
-      </section>
-
-      {/* Special Offers */}
-      <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-2 gap-8">
-            <div className="relative h-[300px] rounded-lg overflow-hidden group">
-              <Image
-                src="/placeholder.svg"
-                alt="New Arrivals"
-                fill
-                className="object-cover transition-transform group-hover:scale-110"
-              />
-              <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors" />
-              <div className="absolute inset-0 flex flex-col justify-center p-8">
-                <h3 className="text-3xl font-bold text-white mb-4">New Arrivals</h3>
-                <p className="text-white mb-6">Discover our latest products</p>
-                <Button className="w-fit bg-white text-green-600 hover:bg-gray-100">
-                  Shop Now
-                </Button>
-              </div>
-            </div>
-            <div className="relative h-[300px] rounded-lg overflow-hidden group">
-              <Image
-                src="/placeholder.svg"
-                alt="Special Deals"
-                fill
-                className="object-cover transition-transform group-hover:scale-110"
-              />
-              <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors" />
-              <div className="absolute inset-0 flex flex-col justify-center p-8">
-                <h3 className="text-3xl font-bold text-white mb-4">Special Deals</h3>
-                <p className="text-white mb-6">Limited time offers on selected items</p>
-                <Button className="w-fit bg-white text-green-600 hover:bg-gray-100">
-                  View Offers
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <Footer />
+      </div>
+    </section>
+    <Footer />
     </div>
+    
   )
 }
-

@@ -7,7 +7,7 @@ from django.urls import path, include
 from . import views
 router = DefaultRouter()
 router.register(r'user', CustomUserViewSet)
-router.register(r'products', ProductViewSet, basename='products')
+router.register(r'products', ProductViewSet)
 router.register(r'images', ImageViewSet)
 router.register(r'item_categories', ItemCategoryViewSet)
 router.register(r'animal_categories', AnimalCategoryViewSet)

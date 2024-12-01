@@ -198,7 +198,7 @@ class CustomUserViewSet(viewsets.ModelViewSet):
             print("error", serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-from django.db.models import Q
+from django.db.models import Q, Max
 class ProductViewSet(viewsets.ModelViewSet):
     serializer_class = ProductSerializer
     queryset = Product.objects.prefetch_related('ratings')
@@ -243,6 +243,10 @@ class ProductViewSet(viewsets.ModelViewSet):
                 queryset = queryset.order_by('-created_at')
 
         return queryset.distinct()
+    @action(detail=False, methods=['get'], permission_classes=[AllowAny])
+    def max_price(self, request):
+        max_price = Product.objects.aggregate(Max('price'))['price__max']
+        return Response({'max_price': max_price})
 class ImageViewSet(viewsets.ModelViewSet):
     queryset = Image.objects.all()
     serializer_class = ImageSerializer
