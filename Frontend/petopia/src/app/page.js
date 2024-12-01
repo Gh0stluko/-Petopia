@@ -14,6 +14,7 @@ import { useRouter } from 'next/navigation'
 import { Avatar, AvatarImage, AvatarFallback } from "../components/ui/avatar"
 import Header from "../components/nav"
 import Footer from '@/components/Footer'
+import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel"
 const SkeletonLoader = ({ height, width, className }) => (
   <div className={`animate-pulse bg-gray-200 rounded ${className}`} style={{ height, width }}></div>
 );
@@ -32,6 +33,11 @@ export default function HomePage() {
   const [User, setUser] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
   const router = useRouter()
+  const [displayCount, setDisplayCount] = useState(8)
+
+  const showAllCategories = () => {
+    setDisplayCount(categories.length)
+  }
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
@@ -139,79 +145,60 @@ export default function HomePage() {
         Search_Included={true}
       />
 
-      {/* Hero Section */}
-      <section className="relative h-[60vh] bg-gray-100">
-        {isLoading ? (
-          <SkeletonLoader className="h-full w-full" />
-        ) : (
-          <>
+{/* Hero Carousel */}
+<section className="container mx-auto px-4 py-6">
+  <Carousel className="w-full">
+    <CarouselContent>
+      {[1, 2].map((_, index) => (
+        <CarouselItem key={index}>
+          <div className="relative h-[400px] rounded-lg overflow-hidden">
             <Image
-              alt="Petopia"
-              src='/banner.jpg'
+              src={`/banners/banner-${index + 1}.jpg`}
+              alt={`Promotional banner ${index + 1}`}
               fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              style={{ objectFit: 'cover' }}
-              priority
+              className="object-cover"
+              priority={index === 0}
             />
-            <Snowfall />
-            <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-              <div className="w-full max-w-md px-4">
-                <div className="relative">
-                  <form onSubmit={handleSearch} className='relative'>
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 z-10" />
-                  <Input
-                    value={searchQuery}
-                    type="text"
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="I want to discover..."
-                    className="w-full pl-10 pr-4 py-2 rounded-full border-none bg-white bg-opacity-80 backdrop-blur-sm placeholder-gray-500 text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary focus:bg-opacity-100 transition-all"
-                  />
-                  </form>
-                </div>
+            <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent flex items-center">
+              <div className="text-white p-8 max-w-xl">
+                <h1 className="text-4xl font-bold mb-4">
+                  {index === 0 ? 'Special Offers' : index === 1 ? 'Exclusive Deals' : 'Limited Time Offers'}
+                </h1>
+                <p className="text-lg mb-6">
+                  {index === 0 ? 'Discover amazing deals on pet supplies' : index === 1 ? 'Save big on pet essentials' : 'Hurry, offers end soon!'}
+                </p>
+                <Button size="lg">
+                  {index === 0 ? 'Shop Now' : index === 1 ? 'Explore Now' : 'Grab Now'}
+                </Button>
               </div>
             </div>
-          </>
-        )}
-      </section>
+          </div>
+        </CarouselItem>
+      ))}
+    </CarouselContent>
+    <CarouselPrevious />
+    <CarouselNext />
+  </Carousel>
+</section>
+
 
       {/* All Categories */}
-      <section className="py-12">
-        <div className="container mx-auto px-4">
-          <h2 className="text-2xl font-semibold mb-6 text-center">All Categories</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {isLoading ? (
-              Array(6).fill().map((_, index) => (
-                <SkeletonLoader key={index} className="h-10 w-full" />
-              ))
-            ) : (
-              itemCategories.map((category, index) => (
-                <Button key={index} variant="outline" className="w-full">
-                  {category.name}
-                </Button>
-              ))
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* Featured Categories */}
       <section className="py-12 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <h2 className="text-2xl font-semibold mb-6 text-center">Featured Categories</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {isLoading ? (
-              Array(4).fill().map((_, index) => (
+      <div className="container mx-auto px-4">
+        <h2 className="text-2xl font-semibold mb-6 text-center">All Categories</h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
+          {isLoading
+            ? Array(8).fill(null).map((_, index) => (
                 <SkeletonLoader key={index} className="h-40 w-full" />
               ))
-            ) : (
-              categories.slice(0, 4).map((category, index) => (
-                <div key={index} className="group cursor-pointer">
+            : categories.slice(0, displayCount).map((category, idx) => (
+                <div key={`category-${category.id}-${idx}`} className="group cursor-pointer">
                   <div className="relative h-40 bg-gray-200 rounded-lg overflow-hidden transition-transform duration-300 group-hover:scale-105">
                     <Image
                       src={category.image}
                       alt={category.name}
                       fill
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw, 25vw"
                       style={{ objectFit: 'cover' }}
                     />
                     <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -220,11 +207,21 @@ export default function HomePage() {
                   </div>
                 </div>
               ))
-            )}
-          </div>
+          }
         </div>
-      </section>
+        {!isLoading && categories.length > 8 && (
+          <div className="text-center">
+            <Button onClick={handleShowAllCategories} variant="outline">
+              {showAll ? 'Show Less' : 'Show All Categories'}
+            </Button>
+          </div>
+        )}
+      </div>
+    </section>
       <section className="py-12">
+
+
+
       <div className="container mx-auto px-4">
         <h2 className="text-2xl font-semibold mb-6 text-center">Featured Products</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
