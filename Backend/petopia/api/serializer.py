@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.db import models
 from .models import CustomUser, Product, Image, Item_Category, Animal_Category, Cart
 
 class CustomUserSerializer(serializers.ModelSerializer):
@@ -25,11 +26,17 @@ class AnimalSerializer(serializers.ModelSerializer):
 
 
 class ProductSerializer(serializers.ModelSerializer):
-    images = ImageSerializer(many=True, read_only=True, source='image_set')
+    average_rating = serializers.SerializerMethodField()
+    images = ImageSerializer(many=True, read_only=True)
 
     class Meta:
         model = Product
         fields = '__all__'
+
+    def get_average_rating(self, obj):
+        # Aggregate ratings and calculate the average
+        average = obj.ratings.aggregate(models.Avg('rating'))['rating__avg']
+        return round(average, 1) if average is not None else "no review"
 
 class ItemSerialiazer(serializers.ModelSerializer):
     class Meta:

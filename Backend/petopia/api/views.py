@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -9,7 +10,27 @@ from django.contrib.auth import authenticate
 from .models import CustomUser, Product, Image, Animal_Category,Item_Category, Cart
 from rest_framework import viewsets
 from .serializer import CustomUserSerializer, ProductSerializer, ImageSerializer, AnimalSerializer,ItemSerialiazer, CartSerializer
+from .models import Product, ProductRating
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+class ProductRatingView(APIView):
+    permission_classes = [IsAuthenticated]
+    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
+    def post(self, request, product_id):
+        product = get_object_or_404(Product, id=product_id)
+        rating = request.data.get('rating')
+
+        if not rating or not (1 <= int(rating) <= 5):
+            return Response({"error": "Rating must be between 1 and 5."}, status=status.HTTP_400_BAD_REQUEST)
+
+        ProductRating.objects.update_or_create(
+            product=product,
+            user=request.user,
+            defaults={'rating': rating}
+        )
+
+        return Response({"average_rating": product.average_rating}, status=status.HTTP_200_OK)
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def profile_complete(request):
@@ -179,17 +200,12 @@ class CustomUserViewSet(viewsets.ModelViewSet):
 
 from django.db.models import Q
 class ProductViewSet(viewsets.ModelViewSet):
-    queryset = Product.objects.all()
     serializer_class = ProductSerializer
+    queryset = Product.objects.prefetch_related('ratings')
 
-    @action(detail=False, methods=['get'], permission_classes=[AllowAny])
-    def max_price(self, request):
-        max_price = Product.objects.all().order_by('-price').first().price
-        return JsonResponse({'max_price': max_price})
-    
     def get_queryset(self):
-        queryset = Product.objects.all()
-        
+        queryset = Product.objects.prefetch_related('ratings')
+
         # Search query
         search = self.request.query_params.get('search', '')
         if search:

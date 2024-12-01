@@ -55,14 +55,24 @@ class Product(models.Model):
     Animal_Category = models.ManyToManyField('Animal_Category')
     Item_Category = models.ManyToManyField('Item_Category')
     created_at = models.DateTimeField(auto_now_add=True)
-
     def __str__(self):
         return self.name
     
     @property
     def images(self):
         return self.image_set.all()
+    @property
+    def average_rating(self):
+        return self.ratings.aggregate(average=models.Avg('rating'))['average'] or 0
     
+class ProductRating(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='ratings')
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    rating = models.PositiveSmallIntegerField()  # Від 1 до 5
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('product', 'user')  # Один користувач може оцінити товар лише раз
 
 #create image class for product
 class Image(models.Model):
