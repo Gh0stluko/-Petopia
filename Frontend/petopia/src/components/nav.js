@@ -6,10 +6,11 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import Cookies from 'js-cookie'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ShoppingCart, UserCircle, Plus, Minus, Trash2, Search, Menu } from 'lucide-react'
+import { ShoppingCart, UserCircle, Plus, Minus, Trash2, Search, Menu, X } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,7 +29,7 @@ export default function Header({
   User, 
   searchQuery, 
   setSearchQuery, 
-  handleSearch ,
+  handleSearch,
   Search_Included=false
 }) {
   const [isCartOpen, setIsCartOpen] = useState(false)
@@ -56,7 +57,7 @@ export default function Header({
   }
 
   return (
-    <header className="sticky top-0 z-50 bg-background/95">
+    <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 py-4">
         <div className="flex justify-between items-center">
           {/* Logo */}
@@ -66,18 +67,19 @@ export default function Header({
             </div>
             <span className="font-bold text-xl hidden sm:inline-block">Petopia</span>
           </Link>
-            {Search_Included === true && (
-              <form onSubmit={handleSearch} className="hidden md:flex relative w-full max-w-sm mx-4">
-                <Input
-                  type="text"
-                  placeholder="Search products..."
-                  className="pl-10 pr-4 py-2 w-full"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-              </form>
-            )}
+
+          {Search_Included === true && (
+            <form onSubmit={handleSearch} className="hidden md:flex relative w-full max-w-sm mx-4">
+              <Input
+                type="text"
+                placeholder="Search products..."
+                className="pl-10 pr-4 py-2 w-full"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+            </form>
+          )}
 
           {/* Navigation */}
           <nav className="flex items-center space-x-4">
@@ -98,44 +100,59 @@ export default function Header({
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
                     transition={{ duration: 0.2 }}
-                    className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl z-50 overflow-hidden"
+                    className="absolute right-0 mt-2 w-96 bg-background rounded-lg shadow-xl z-50 overflow-hidden border border-border"
                   >
                     <div className="p-4">
-                      <h2 className="text-lg font-bold mb-4">Your Cart</h2>
+                      <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-lg font-bold">Your Cart</h2>
+                        <Button variant="ghost" size="icon" onClick={() => setIsCartOpen(false)}>
+                          <X className="h-4 w-4" />
+                          <span className="sr-only">Close cart</span>
+                        </Button>
+                      </div>
                       {cart.length === 0 ? (
-                        <p>Your cart is empty.</p>
+                        <div className="text-center py-8">
+                          <ShoppingCart className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                          <p className="text-muted-foreground">Your cart is empty.</p>
+                        </div>
                       ) : (
                         <>
-                          <div className="max-h-96 overflow-y-auto">
+                          <ScrollArea className="h-[300px] pr-4">
                             {cart.map((item) => (
-                              <div key={item.id} className="flex items-center justify-between mb-4 border-b border-gray-200 pb-2">
-                                <div className="flex items-center">
-                                  <Image src={item.images[0].image} alt={item.name} width={50} height={50} className="rounded-md mr-3" />
-                                  <h3 className="font-semibold">{item.name}</h3>
+                              <div key={item.id} className="flex items-center justify-between mb-4 pb-4 border-b border-border">
+                                <div className="flex items-center space-x-4">
+                                  <div className="relative w-16 h-16 rounded-md overflow-hidden">
+                                    <Image src={item.images[0].image} alt={item.name} fill style={{ objectFit: 'cover' }} />
+                                  </div>
+                                  <div>
+                                    <h3 className="font-semibold">{item.name}</h3>
+                                    <p className="text-sm text-muted-foreground">${Math.floor(item.price)}</p>
+                                  </div>
                                 </div>
-                                <div className="flex items-center">
-                                  <span className="text-gray-600">${Math.floor(item.price)}</span>
-                                  <Button variant="outline" size="icon" onClick={() => updateQuantity(item.id, -1)} className="mx-2">
+                                <div className="flex items-center space-x-2">
+                                  <Button variant="outline" size="icon" onClick={() => updateQuantity(item.id, -1)}>
                                     <Minus className="h-4 w-4" />
                                   </Button>
-                                  <span className="mx-2">{item.quantity}</span>
+                                  <span className="w-8 text-center">{item.quantity}</span>
                                   <Button variant="outline" size="icon" onClick={() => updateQuantity(item.id, 1)}>
                                     <Plus className="h-4 w-4" />
                                   </Button>
-                                  <Button variant="ghost" size="icon" onClick={() => removeFromCart(item.id)} className="ml-2">
+                                  <Button variant="ghost" size="icon" onClick={() => removeFromCart(item.id)}>
                                     <Trash2 className="h-4 w-4" />
                                   </Button>
                                 </div>
                               </div>
                             ))}
-                          </div>
-                          <div className="mt-4 flex justify-between font-bold">
-                            <span>Total:</span>
-                            <span>${cart.reduce((total, item) => total + item.price * item.quantity, 0).toFixed(2)}</span>
-                          </div>
-                          <div className="mt-4 flex justify-between">
-                            <Button variant="outline" onClick={clearCart}>Clear Cart</Button>
-                            <Button>Checkout</Button>
+                          </ScrollArea>
+                          <div className="mt-4 space-y-4">
+                            <div className="flex justify-between font-bold">
+                              <span>Total:</span>
+                              <span>${cart.reduce((total, item) => total + item.price * item.quantity, 0).toFixed(2)}</span>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                              <Button variant="outline" onClick={clearCart} className="w-full">Clear Cart</Button>
+                              <Button className="w-full">Checkout</Button>
+                            </div>
                           </div>
                         </>
                       )}
@@ -176,3 +193,4 @@ export default function Header({
     </header>
   )
 }
+
