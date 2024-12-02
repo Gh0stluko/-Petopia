@@ -28,6 +28,7 @@ class AnimalSerializer(serializers.ModelSerializer):
 class ProductSerializer(serializers.ModelSerializer):
     average_rating = serializers.SerializerMethodField()
     images = ImageSerializer(many=True, read_only=True)
+    Animal_Category = AnimalSerializer(many=True)
 
     class Meta:
         model = Product
