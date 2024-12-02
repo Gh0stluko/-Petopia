@@ -175,6 +175,23 @@ class CustomUserViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+    @action(detail=False, methods=['put'], url_path='update_wishlist')
+    def update_wishlist(self, request):
+        user = request.user
+        product_id = request.data.get('product_id')
+        product = get_object_or_404(Product, id=product_id)
+        if product in user.wishlist.all():
+            print("removed")
+            user.wishlist.remove(product)
+            user.save()
+            return Response({'message': 'Product removed from wishlist'}, status=status.HTTP_200_OK)
+        else:
+            user.wishlist.add(product)
+            user.save()
+            print("added")
+            return Response({'message': 'Wishlist updated successfully'}, status=status.HTTP_200_OK)
+            
+        return Response({'message': 'Wishlist updated successfully'}, status=status.HTTP_200_OK)
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def me(self, request):
         """

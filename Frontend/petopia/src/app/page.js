@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { Input } from "@/components/ui/input"
 import { Button } from "../components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { ShoppingCart, Search, UserCircle, Plus, Minus, Trash2 } from 'lucide-react'
+import { ShoppingCart, Search, UserCircle, Plus, Minus, Trash2, Heart } from 'lucide-react'
 import api from './services/api'
 import Snowfall from 'react-snowfall'
 import Cookies from 'js-cookie'
@@ -33,6 +33,8 @@ export default function HomePage() {
   const [User, setUser] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
   const router = useRouter()
+  const [isHeartClicked, setIsHeartClicked] = useState(false);
+  const [wishlist, setWishlist] = useState({});
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
@@ -62,6 +64,31 @@ export default function HomePage() {
 
     fetchData();
   }, []);
+  useEffect(() => {
+    const fetchWishlist = async () => {
+      try {
+        const wishresponse = await api.get('/user/me/');
+        const wishlistData = wishresponse.data.wishlist;
+  
+        // Update wishlist state
+        setWishlist(wishlistData);
+  
+        // Update heart clicked state based on wishlist
+        const heartState = {};
+        wishlistData.forEach(productId => {
+          heartState[productId] = true; // Mark products in the wishlist as liked
+        });
+  
+        setIsHeartClicked(heartState);
+      } catch (error) {
+        console.error('Error fetching wishlist:', error);
+      }
+    };
+  
+    fetchWishlist();
+  }, []);
+
+
   useEffect(() => {
     setCategories([...animalCategories, ...itemCategories])
   }, [animalCategories, itemCategories])
@@ -96,6 +123,57 @@ export default function HomePage() {
       ).filter(item => item.quantity > 0)
     )
   }
+
+  const handlewishlist = async (id) => {
+    try {
+      // Update local state first
+      setWishlist(prevWishlist => {
+        const isInWishlist = prevWishlist[id];
+        if (isInWishlist) {
+          const { [id]: _, ...rest } = prevWishlist;
+          return rest;
+        }
+        return {
+          ...prevWishlist,
+          [id]: true
+        };
+      });
+  
+      // Update heart state
+      setIsHeartClicked(prev => ({
+        ...prev,
+        [id]: !prev[id]
+      }));
+  
+      // Make API call
+      const response = await api.put('/user/update_wishlist/', { 
+        product_id: id 
+      });
+      
+      console.log('Wishlist updated on server', response.data);
+    } catch (error) {
+      // Revert state on error
+      setWishlist(prevWishlist => {
+        const isInWishlist = prevWishlist[id];
+        if (!isInWishlist) {
+          const { [id]: _, ...rest } = prevWishlist;
+          return rest;
+        }
+        return {
+          ...prevWishlist,
+          [id]: true
+        };
+      });
+      
+      setIsHeartClicked(prev => ({
+        ...prev,
+        [id]: !prev[id]
+      }));
+  
+      console.error('Error updating wishlist:', error);
+    }
+  };
+  
 
   const removeFromCart = (id) => {
     setCart(prevCart => prevCart.filter(item => item.id !== id))
@@ -229,13 +307,56 @@ export default function HomePage() {
 {/* New Products */}
 
 
+<section>
+        <h2 className="text-2xl font-semibold mb-4">Бестселери в категорії Ігри</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          {products.slice(0,8).map((product) => (
+            <Card key={product.id} className="group relative">
+              <CardContent className="p-3">
+              <Button
+  variant="ghost"
+  size="icon"
+  className="absolute right-5 top-5 z-10"
+  aria-label="Add to wishlist"
+  onClick={() => handlewishlist(product.id)}
+>
+  <Heart
+    className={`w-5 h-5 ${isHeartClicked[product.id] ? 'text-yellow-500' : 'text-muted-foreground'}`}
+  />
+</Button>
+                <div className="aspect-square mb-3">
+                  <img
+                    src={product.images[0].image}
+                    alt={product.name}
+                    className="w-full h-full object-cover rounded-md"
+                  />
+                </div>
+                <div className="space-y-2">
+                <a href={`/product/${product.id}`}>
+  <h3 className="font-medium line-clamp-2 text-sm hover:underline">{product.name}</h3>
+</a>
+                  <div className="flex items-baseline gap-2">
+                    <p className="font-bold text-primary">
+                      {product.price.toLocaleString()} {product.currency}
+                    </p>
+                    {product.originalPrice && (
+                      <p className="text-sm text-muted-foreground line-through">
+                        {product.originalPrice.toLocaleString()} {product.currency}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
 
 {/* Featured Products */}
 
+
+
       <section className="py-12">
-
-
-
       <div className="container mx-auto px-4">
         <h2 className="text-2xl font-semibold mb-6 text-center">Featured Products</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

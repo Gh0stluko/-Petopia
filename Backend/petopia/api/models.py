@@ -38,6 +38,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     phone = models.CharField(max_length=25, blank=True)
     gender = models.CharField(max_length=20, blank=True)
     registration_complete = models.BooleanField(default=False)
+    wishlist = models.ManyToManyField('Product', related_name='wishlists', blank=True)
     objects = CustomUserManager()
 
     USERNAME_FIELD = 'email'
