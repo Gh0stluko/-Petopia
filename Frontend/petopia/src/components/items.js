@@ -5,6 +5,13 @@ import { Heart } from 'lucide-react';
 import Link from 'next/link';
 
 export function NewProducts({ products, handlewishlist, isHeartClicked, title, isLoading = false }) {
+  const calculateDiscountedPrice = (price, discount) => {
+    return price - (price * (discount / 100));
+  };
+
+  const formatPrice = (price) => {
+    return Math.floor(price).toLocaleString('uk-UA');
+  };
 
   return (
     <section className="">
@@ -51,13 +58,26 @@ export function NewProducts({ products, handlewishlist, isHeartClicked, title, i
                     <Link href={`/product/${product.id}`}>
                       <h3 className="font-medium line-clamp-2 text-sm hover:underline">{product.name}</h3>
                     </Link>
-                    <div className="flex items-baseline gap-2">
-                      <p className="font-bold text-primary">
-                        {product.price.toLocaleString()} {product.currency}
-                      </p>
-                      {product.originalPrice && (
-                        <p className="text-sm text-muted-foreground line-through">
-                          {product.originalPrice.toLocaleString()} {product.currency}
+                    <div className="flex flex-col">
+                      {product.discount > 0 ? (
+                        <>
+                          <div className="relative">
+                            <p className="text-sm text-muted-foreground line-through">
+                              {formatPrice(product.price)} ₴
+                            </p>
+                            {product.discount > 0 && (
+                              <span className="absolute top-0 right-0 bg-green-500 text-white text-xs px-1 rounded">
+                                {product.discount}% off
+                              </span>
+                            )}
+                          </div>
+                          <p className="font-bold text-primary">
+                            {formatPrice(calculateDiscountedPrice(product.price, product.discount))} ₴
+                          </p>
+                        </>
+                      ) : (
+                        <p className="font-bold text-primary">
+                          {formatPrice(product.price)} ₴
                         </p>
                       )}
                     </div>
@@ -71,3 +91,4 @@ export function NewProducts({ products, handlewishlist, isHeartClicked, title, i
     </section>
   );
 }
+

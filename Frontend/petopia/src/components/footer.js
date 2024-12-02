@@ -25,7 +25,7 @@ export default function Footer() {
           </div>
           
           <div>
-            <h3 className="text-lg font-semibold mb-4 text-gray-800">Обслуговування клієнтів</h3>
+            <h3 className="text-lg font-semibold mb-4 text-gray-800">FAQ</h3>
             <nav className="space-y-2 text-sm">
               <Link href="#" className="block text-gray-600 hover:text-gray-800">Зв'язатися з нами</Link>
               <Link href="#" className="block text-gray-600 hover:text-gray-800">Доставка та повернення</Link>
