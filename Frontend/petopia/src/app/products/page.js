@@ -2,8 +2,6 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams ,useRouter} from 'next/navigation';
-import Image from 'next/image';
-import Link from 'next/link';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,7 +14,20 @@ import { motion } from 'framer-motion';
 import { debounce, set } from 'lodash';
 import {Slider, user} from "@nextui-org/react";
 import Header from '@/components/nav';
+import Cookies from 'js-cookie';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { ProductCard } from '@/components/ProductComponent';
+import { Cookie } from 'next/font/google';
 const SkeletonLoader = ({ height, width, className }) => (
   <div className={`animate-pulse bg-gray-200 rounded ${className}`} style={{ height, width }}></div>
 );
@@ -50,6 +61,9 @@ export default function SearchPage() {
   const [isFirstLoad, setIsFirstLoad] = useState(true);
   const [isHeartClicked, setIsHeartClicked] = useState(false);
   const router = useRouter();
+  const accessToken = Cookies.get('accessToken');
+  const [modalOpen, setModalOpen] = useState(false)
+  const [wishlist, setWishlist] = useState({});
   const { ref, inView } = useInView({
     threshold: 0,
   });
@@ -58,7 +72,7 @@ export default function SearchPage() {
   useEffect(() => {
     const fetchWishlist = async () => {
       try {
-        if (!User) {
+        if (User) {
           return;
         }
         const wishresponse = await api.get('/user/me/');
@@ -76,8 +90,9 @@ export default function SearchPage() {
         console.error('Error fetching wishlist:', error);
       }
     };
+    fetchWishlist();
   
-  }, [User]);
+  }, []);
   
   const handlewishlist = async (id) => {
     if (!User) {
@@ -106,7 +121,6 @@ export default function SearchPage() {
           product_id: id 
         });
         
-        console.log('Wishlist updated on server', response.data);
       } catch (error) {
         setWishlist(prevWishlist => {
           const isInWishlist = prevWishlist[id];
@@ -129,14 +143,18 @@ export default function SearchPage() {
       }
     }
   };
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (sortBy) => {
     setIsLoading(true);
     try {
       const animalCategoriesResponse = await api.get('/animal_categories/');
       const itemCategoriesResponse = await api.get('/item_categories/');
       const maxPriceResponse = await api.get('/products/max_price/');
-      const userResponse = await api.get('/user/me/');
-      setUser(userResponse.data);
+
+      if (!accessToken) {
+
+        const userResponse = await api.get('/user/me/');
+        setUser(userResponse.data);
+      }
       setMaxPrice(maxPriceResponse.data.max_price);
       setAnimalCategories(animalCategoriesResponse.data);
       setItemCategories(itemCategoriesResponse.data);
@@ -323,7 +341,7 @@ export default function SearchPage() {
               <span>{filteredResults.length} results</span>
               <select
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
+                onChange={(e) => {setSortBy(e.target.value); fetchData(e.target.value)}}
                 className="border rounded p-2"
               >
                 <option value="relevance">Relevance</option>
@@ -371,6 +389,24 @@ export default function SearchPage() {
           </div>
         </div>
       </motion.main>
+    {/* Modal */}
+    {modalOpen && (
+      <AlertDialog open={modalOpen} onOpenChange={setModalOpen}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Login Required</AlertDialogTitle>
+          <AlertDialogDescription>
+            You need to be logged in to add items to your wishlist. Would you like to log in now?
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter className='flex justify-center items-center'>
+          <AlertDialogCancel  onClick={() => setModalOpen(false)}>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={() => router.push('/account/auth/')}>Log In</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    )}
+
     </div>
   );
 }

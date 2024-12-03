@@ -102,7 +102,7 @@ export default function HomePage() {
   
     fetchWishlist();
   }, [User]);
-  
+
   const handlewishlist = async (id) => {
     if (!User) {
       setModalOpen(true);
@@ -226,7 +226,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen">
         <CustomBackgroundDecoration />
-        <Snowfall color="white" snowflakeCount={200} />
+
       <Header
         cart={cart}
         updateQuantity={updateQuantity}
@@ -259,6 +259,7 @@ export default function HomePage() {
                       <h1 className="text-4xl font-bold mb-4">
                         {index === 0 ? 'Special Offers' : 'Exclusive Deals'}
                       </h1>
+                      <Snowfall color="white" snowflakeCount={50} />
                       <p className="text-lg mb-6">
                         {index === 0 ? 'Discover amazing deals on pet supplies' : 'Save big on pet essentials'}
                       </p>
