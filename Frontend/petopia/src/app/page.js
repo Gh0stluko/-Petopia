@@ -102,44 +102,7 @@ export default function HomePage() {
   
     fetchWishlist();
   }, [User]);
-
-  useEffect(() => {
-    setCategories([...animalCategories, ...itemCategories])
-  }, [animalCategories, itemCategories])
-
-  const addToCart = (product) => {
-    setCart(prevCart => {
-      const existingItem = prevCart.find(item => item.id === product.id)
-      if (existingItem) {
-        return prevCart.map(item =>
-          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
-        )
-      }
-      return [...prevCart, { ...product, quantity: 1 }]
-    })
-  }
-
-  useEffect(() => {
-    const savedCart = localStorage.getItem('cart')
-    if (savedCart) {
-      setCart(JSON.parse(savedCart))
-    }
-  }, [])
-
-  useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(cart))
-  }, [cart])
-
-  const updateQuantity = (id, delta) => {
-    setCart(prevCart =>
-      prevCart.map(item =>
-        item.id === id
-          ? { ...item, quantity: Math.max(0, item.quantity + delta) }
-          : item
-      ).filter(item => item.quantity > 0)
-    )
-  }
-
+  
   const handlewishlist = async (id) => {
     if (!User) {
       setModalOpen(true);
@@ -190,6 +153,44 @@ export default function HomePage() {
       }
     }
   };
+  useEffect(() => {
+    setCategories([...animalCategories, ...itemCategories])
+  }, [animalCategories, itemCategories])
+
+  const addToCart = (product) => {
+    setCart(prevCart => {
+      const existingItem = prevCart.find(item => item.id === product.id)
+      if (existingItem) {
+        return prevCart.map(item =>
+          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+        )
+      }
+      return [...prevCart, { ...product, quantity: 1 }]
+    })
+  }
+
+  useEffect(() => {
+    const savedCart = localStorage.getItem('cart')
+    if (savedCart) {
+      setCart(JSON.parse(savedCart))
+    }
+  }, [])
+
+  useEffect(() => {
+    localStorage.setItem('cart', JSON.stringify(cart))
+  }, [cart])
+
+  const updateQuantity = (id, delta) => {
+    setCart(prevCart =>
+      prevCart.map(item =>
+        item.id === id
+          ? { ...item, quantity: Math.max(0, item.quantity + delta) }
+          : item
+      ).filter(item => item.quantity > 0)
+    )
+  }
+
+
 
   const removeFromCart = (id) => {
     setCart(prevCart => prevCart.filter(item => item.id !== id))

@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams ,useRouter} from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Input } from "@/components/ui/input";
@@ -14,8 +14,9 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useInView } from 'react-intersection-observer';
 import { motion } from 'framer-motion';
 import { debounce, set } from 'lodash';
-import {Slider} from "@nextui-org/react";
-
+import {Slider, user} from "@nextui-org/react";
+import Header from '@/components/nav';
+import { ProductCard } from '@/components/ProductComponent';
 const SkeletonLoader = ({ height, width, className }) => (
   <div className={`animate-pulse bg-gray-200 rounded ${className}`} style={{ height, width }}></div>
 );
@@ -47,16 +48,95 @@ export default function SearchPage() {
   const [cart, setCart] = useState([]);
   const [page, setPage] = useState(1);
   const [isFirstLoad, setIsFirstLoad] = useState(true);
+  const [isHeartClicked, setIsHeartClicked] = useState(false);
+  const router = useRouter();
   const { ref, inView } = useInView({
     threshold: 0,
   });
 
+  
+  useEffect(() => {
+    const fetchWishlist = async () => {
+      try {
+        if (!User) {
+          return;
+        }
+        const wishresponse = await api.get('/user/me/');
+        const wishlistData = wishresponse.data.wishlist;
+        setUser(wishresponse.data);
+        setWishlist(wishlistData);
+  
+        const heartState = {};
+        wishlistData.forEach(productId => {
+          heartState[productId] = true;
+        });
+  
+        setIsHeartClicked(heartState);
+      } catch (error) {
+        console.error('Error fetching wishlist:', error);
+      }
+    };
+  
+  }, [User]);
+  
+  const handlewishlist = async (id) => {
+    if (!User) {
+      setModalOpen(true);
+    }
+    else {
+      try {
+        setWishlist(prevWishlist => {
+          const isInWishlist = prevWishlist[id];
+          if (isInWishlist) {
+            const { [id]: _, ...rest } = prevWishlist;
+            return rest;
+          }
+          return {
+            ...prevWishlist,
+            [id]: true
+          };
+        });
+    
+        setIsHeartClicked(prev => ({
+          ...prev,
+          [id]: !prev[id]
+        }));
+    
+        const response = await api.put('/user/update_wishlist/', { 
+          product_id: id 
+        });
+        
+        console.log('Wishlist updated on server', response.data);
+      } catch (error) {
+        setWishlist(prevWishlist => {
+          const isInWishlist = prevWishlist[id];
+          if (!isInWishlist) {
+            const { [id]: _, ...rest } = prevWishlist;
+            return rest;
+          }
+          return {
+            ...prevWishlist,
+            [id]: true
+          };
+        });
+        
+        setIsHeartClicked(prev => ({
+          ...prev,
+          [id]: !prev[id]
+        }));
+    
+        console.error('Error updating wishlist:', error);
+      }
+    }
+  };
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
       const animalCategoriesResponse = await api.get('/animal_categories/');
       const itemCategoriesResponse = await api.get('/item_categories/');
       const maxPriceResponse = await api.get('/products/max_price/');
+      const userResponse = await api.get('/user/me/');
+      setUser(userResponse.data);
       setMaxPrice(maxPriceResponse.data.max_price);
       setAnimalCategories(animalCategoriesResponse.data);
       setItemCategories(itemCategoriesResponse.data);
@@ -65,6 +145,14 @@ export default function SearchPage() {
         setIsFirstLoad(false);
       }
 
+      const url = new URL(window.location.href);
+      if (searchQuery && searchQuery.trim()) {
+        url.searchParams.set('q', searchQuery);
+      } else {
+        url.searchParams.delete('q');
+      }
+      router.replace(url.toString(), undefined, { shallow: true });
+      
       const filters = {
         ...(searchQuery && searchQuery.trim() ? { search: searchQuery } : { search: "" }),
         animal_category: selectedAnimalCategories,
@@ -81,7 +169,7 @@ export default function SearchPage() {
       console.error('Error fetching data:', error);
     }
     setIsLoading(false);
-  }, [searchQuery, selectedAnimalCategories, selectedItemCategories, priceRange, sortBy]);
+  }, [searchQuery, selectedAnimalCategories, selectedItemCategories, priceRange, sortBy, User]);
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
@@ -149,49 +237,10 @@ export default function SearchPage() {
   };
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <motion.header className="sticky top-0 z-50 bg-white shadow-sm" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/" className="flex items-center">
-            <div className="w-12 h-12 rounded-full relative">
-              <Image src="/logo.svg" alt="Petopia" fill priority style={{ objectFit: 'contain' }} />
-            </div>
-            <span className="ml-2 text-xl font-bold text-gray-800">Petopia</span>
-          </Link>
-          <form onSubmit={handleSearch} className="flex-grow max-w-2xl mx-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <Input
-                type="search"
-                placeholder="Search products..."
-                className="w-full pl-10 pr-4 py-2 rounded-full"
-                value={searchQuery}
-                onChange={handleSearchChange} // Updated handler
-              />
-            </div>
-          </form>
-          <nav className="flex items-center space-x-4">
-            <Button variant="ghost" size="icon">
-              <ShoppingCart className="h-6 w-6" />
-            </Button>
-            {User ? (
-              <Avatar className="w-8 h-8">
-                <AvatarImage src={User.avatar} alt="User Avatar" />
-                <AvatarFallback>{User.first_name?.[0]}{User.last_name?.[0]}</AvatarFallback>
-              </Avatar>
-            ) : (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => {
-                  // Handle login logic
-                }}
-              >
-                <UserCircle className="h-6 w-6" />
-              </Button>
-            )}
-          </nav>
-        </div>
-      </motion.header>
+      {/*? Header */}
+      <Header Search_Included={true} User={User} cart ={cart} searchQuery={searchQuery} setSearchQuery={setSearchQuery} handleSearch={handleSearch} />
+
+      {/*? Main */}
       <motion.main className="flex-grow container mx-auto px-4 py-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-semibold">
@@ -299,36 +348,10 @@ export default function SearchPage() {
               </div>
             ) : displayedResults.length > 0 ? (
               <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                   {displayedResults.map((product) => (
                     <motion.div key={product.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-                      <Card className="flex flex-col justify-between h-full transition-shadow duration-300 hover:shadow-lg">
-                        <div className="relative h-48">
-                          <Image
-                            src={product.images[0]?.image || '/placeholder.png'}
-                            alt={product.name}
-                            fill
-                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-                            style={{ objectFit: 'cover' }}
-                          />
-                        </div>
-                        <CardContent className="p-4 flex-grow flex flex-col">
-                          <Link href={`/product/${product.id}`} className="font-semibold text-lg mb-2 hover:underline">
-                            {product.name}
-                          </Link>
-                          <p className="text-sm text-gray-500 mb-2">
-                            {product.animal_category?.name || 'N/A'} - {product.item_category?.name || 'N/A'}
-                          </p>
-                          <div className="mt-auto">
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="font-semibold text-lg">
-                                {parseFloat(product.price).toFixed(2)} грн
-                              </span>
-                            </div>
-                            <Button className="w-full" onClick={() => addToCart(product)}>Add to Cart</Button>
-                          </div>
-                        </CardContent>
-                      </Card>
+                      <ProductCard product={product} handlewishlist={handlewishlist} isHeartClicked={isHeartClicked} />
                     </motion.div>
                   ))}
                 </div>
