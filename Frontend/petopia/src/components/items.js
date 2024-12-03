@@ -8,7 +8,7 @@ export function NewProducts({ products, handlewishlist, isHeartClicked, title, i
         <h2 className="text-2xl font-semibold mb-3">{title}</h2>
         <div className="text-right">
           <a href={`/${href}`} className="text-black hover:underline text-right">
-            View all products
+            View all products ↓
             </a>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
