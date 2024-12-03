@@ -27,7 +27,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-
+import BackgroundDecoration from "@/components/BackgroundDecoration"
 const SkeletonLoader = ({ height, width, className }) => (
   <div className={`animate-pulse bg-gray-200 rounded ${className}`} style={{ height, width }}></div>
 );
@@ -48,6 +48,7 @@ export default function HomePage() {
   const [isHeartClicked, setIsHeartClicked] = useState({})
   const [wishlist, setWishlist] = useState({})
   const [modalOpen, setModalOpen] = useState(false)
+  
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
@@ -222,7 +223,9 @@ export default function HomePage() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen">
+        <BackgroundDecoration />
+        <Snowfall color="white" snowflakeCount={200} />
       <Header
         cart={cart}
         updateQuantity={updateQuantity}
@@ -368,6 +371,7 @@ export default function HomePage() {
       </AlertDialogContent>
     </AlertDialog>
     )}
+
   </div>
   )
 }
