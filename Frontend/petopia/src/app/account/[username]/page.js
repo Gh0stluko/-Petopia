@@ -21,14 +21,14 @@ import { useRouter } from 'next/navigation'
 import { ToastAction } from "@/components/ui/toast"
 import { useToast } from "@/hooks/use-toast"
 import { Toaster } from "@/components/ui/toaster"
-
+import Header from '@/components/nav'
 export default function AccountPage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [user, setUser] = useState({})
   const [isLoading, setIsLoading] = useState(true)
   const [country, setCountry] = useState('US')
   const router = useRouter()
-
+  const [cart, setCart] = useState([])
   const [passwordError, setPasswordError] = useState('')
   const { toast } = useToast()
 
@@ -244,74 +244,17 @@ export default function AccountPage() {
       }
     }
   }
-
+  const getCartFromLocalStorage = () => {
+    const cart = localStorage.getItem('cart')
+    return cart ? JSON.parse(cart) : []
+  }
+  useEffect(() => {
+    const cart = getCartFromLocalStorage()
+    setCart(cart)
+  }, [])
   return (
     <div className=" bg-gray-100 flex flex-col">
-      <header className="z-50 bg-white shadow-sm ">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/" className="w-16 h-16 rounded-full relative">
-            <Avatar>
-              <AvatarImage src="/logo.svg" alt="Petopia" />
-              <AvatarFallback>PT</AvatarFallback>
-            </Avatar>
-          </Link>
-          <nav className="flex items-center space-x-4">
-            <Link href="/cart">
-              <Button variant="ghost" size="icon">
-                <ShoppingCart className="h-6 w-6" />
-                <span className="sr-only">Cart</span>
-              </Button>
-            </Link>
-            <div className="relative">
-              {user ? (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => {
-                    setIsMenuOpen(!isMenuOpen)
-                  }}
-                  aria-expanded={isMenuOpen}
-                  aria-haspopup="true"
-                >
-                    <Avatar className="w-8 h-8">
-                    <AvatarImage src={user?.avatar} alt="User Avatar" />
-                    <AvatarFallback>
-                      {user?.username ? user.username.substring(0,2) : 'U'}
-                    </AvatarFallback>
-                    </Avatar>
-                  <span className="sr-only">User menu</span>
-                </Button>
-              ) : (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => {
-                    router.push('/account/auth')
-                  }}
-                >
-                  <UserCircle className="h-6 w-6" />
-
-                  <span className="sr-only">Login</span>
-                </Button>
-              )}
-              
-              {isMenuOpen && user && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10">
-                  <a href={`/account/${user?.username}`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                    My Profile
-                  </a>
-                  <button
-                    onClick={handleLogout}
-                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    Logout
-                  </button>
-                </div>
-              )}
-            </div>
-          </nav>
-        </div>
-      </header>
+      <Header User = {user} cart = {getCartFromLocalStorage} />
 
       <main className="flex-grow container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-8">My Account</h1>

@@ -27,7 +27,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import BackgroundDecoration from "@/components/BackgroundDecoration"
+import CustomBackgroundDecoration from "@/components/BackgroundDecoration"
 const SkeletonLoader = ({ height, width, className }) => (
   <div className={`animate-pulse bg-gray-200 rounded ${className}`} style={{ height, width }}></div>
 );
@@ -224,7 +224,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen">
-        <BackgroundDecoration />
+        <CustomBackgroundDecoration />
         <Snowfall color="white" snowflakeCount={200} />
       <Header
         cart={cart}
