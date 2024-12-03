@@ -289,6 +289,7 @@ export default function HomePage() {
       isHeartClicked={isHeartClicked}
       title={"Dog's products"}
       isLoading={isLoading}
+      href='products?animal_category=dogs'
     />
 
       {/* Cat products */}
@@ -300,6 +301,7 @@ export default function HomePage() {
       isHeartClicked={isHeartClicked}
       title={"Cat's products"}
       isLoading={isLoading}
+      href='products?animal_category=cats'
     />
       {/* All Categories */}
       <section className="py-12 bg-gray-50">

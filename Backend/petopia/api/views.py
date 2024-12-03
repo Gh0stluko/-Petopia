@@ -233,6 +233,7 @@ class ProductViewSet(viewsets.ModelViewSet):
 
         # Animal category filter
         animal_categories = self.request.query_params.getlist('animal_category')
+        print(animal_categories)
         if animal_categories:
             queryset = queryset.filter(Animal_Category__name__in=animal_categories)
 

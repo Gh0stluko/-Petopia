@@ -50,7 +50,7 @@ export default function SearchPage() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [animalCategories, setAnimalCategories] = useState([]);
   const [itemCategories, setItemCategories] = useState([]);
-  const [selectedAnimalCategories, setSelectedAnimalCategories] = useState([]);
+  const [selectedAnimalCategories, setSelectedAnimalCategories] = useState([searchParams.get('animal_category')] || []);
   const [selectedItemCategories, setSelectedItemCategories] = useState([]);
   const [priceRange, setPriceRange] = useState({ min: '', max: '' });
   const [maxPrice, setMaxPrice] = useState(1000);
@@ -173,13 +173,13 @@ export default function SearchPage() {
       
       const filters = {
         ...(searchQuery && searchQuery.trim() ? { search: searchQuery } : { search: "" }),
-        animal_category: selectedAnimalCategories,
+        animal_category: selectedAnimalCategories.join(','),
         item_category: selectedItemCategories,
         min_price: priceRange.min,
         max_price: priceRange.max,
         sort_by: sortBy,
       };
-      
+      console.log(filters);
       const filteredResponse = await api.get('/products/', { params: filters });
       setSearchResults(filteredResponse.data);
       setFilteredResults(filteredResponse.data);
