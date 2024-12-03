@@ -16,6 +16,17 @@ import Header from "@/components/nav"
 import Footer from '@/components/Footer'
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel"
 import { NewProducts } from '@/components/items'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 const SkeletonLoader = ({ height, width, className }) => (
   <div className={`animate-pulse bg-gray-200 rounded ${className}`} style={{ height, width }}></div>
@@ -36,7 +47,7 @@ export default function HomePage() {
   const router = useRouter()
   const [isHeartClicked, setIsHeartClicked] = useState({})
   const [wishlist, setWishlist] = useState({})
-
+  const [modalOpen, setModalOpen] = useState(false)
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
@@ -130,7 +141,7 @@ export default function HomePage() {
 
   const handlewishlist = async (id) => {
     if (!User) {
-      return router.push('/account/auth')
+      setModalOpen(true);
     }
     else {
       try {
@@ -340,6 +351,23 @@ export default function HomePage() {
       </section>
 
     <Footer />
+    {/* Modal */}
+    {modalOpen && (
+      <AlertDialog open={modalOpen} onOpenChange={setModalOpen}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Login Required</AlertDialogTitle>
+          <AlertDialogDescription>
+            You need to be logged in to add items to your wishlist. Would you like to log in now?
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter className='flex justify-center items-center'>
+          <AlertDialogCancel  onClick={() => setModalOpen(false)}>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={() => router.push('/account/auth/')}>Log In</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    )}
   </div>
   )
 }
