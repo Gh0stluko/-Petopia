@@ -50,7 +50,18 @@ export default function SearchPage() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [animalCategories, setAnimalCategories] = useState([]);
   const [itemCategories, setItemCategories] = useState([]);
-  const [selectedAnimalCategories, setSelectedAnimalCategories] = [searchParams.get('animal_category')] || [];
+  const [selectedAnimalCategories, setSelectedAnimalCategories] = useState(() => {
+    const categoryParam = searchParams.get('animal_category');
+    if (categoryParam) {
+      // Handle both array and string cases
+      return typeof categoryParam === 'string' 
+        ? categoryParam.split(',')
+        : Array.isArray(categoryParam) 
+          ? categoryParam 
+          : [];
+    }
+    return [];
+  });
   const [selectedItemCategories, setSelectedItemCategories] = useState([]);
   const [priceRange, setPriceRange] = useState({ min: '', max: '' });
   const [maxPrice, setMaxPrice] = useState(1000);
@@ -61,7 +72,6 @@ export default function SearchPage() {
   const [isFirstLoad, setIsFirstLoad] = useState(true);
   const [isHeartClicked, setIsHeartClicked] = useState(false);
   const router = useRouter();
-  const accessToken = Cookies.get('accessToken');
   const [modalOpen, setModalOpen] = useState(false)
   const [wishlist, setWishlist] = useState({});
   const { ref, inView } = useInView({
@@ -71,10 +81,10 @@ export default function SearchPage() {
   
   useEffect(() => {
     const fetchWishlist = async () => {
+      if (!User){
+        return;
+      }
       try {
-        if (User) {
-          return;
-        }
         const wishresponse = await api.get('/user/me/');
         const wishlistData = wishresponse.data.wishlist;
         setUser(wishresponse.data);
@@ -150,8 +160,7 @@ export default function SearchPage() {
       const itemCategoriesResponse = await api.get('/item_categories/');
       const maxPriceResponse = await api.get('/products/max_price/');
 
-      if (!accessToken) {
-
+      if (User) {
         const userResponse = await api.get('/user/me/');
         setUser(userResponse.data);
       }
@@ -173,7 +182,7 @@ export default function SearchPage() {
       
       const filters = {
         ...(searchQuery && searchQuery.trim() ? { search: searchQuery } : { search: "" }),
-        animal_category: selectedAnimalCategories,
+        animal_category: selectedAnimalCategories.length ? selectedAnimalCategories.join(',') : [],
         item_category: selectedItemCategories,
         min_price: priceRange.min,
         max_price: priceRange.max,
@@ -278,7 +287,7 @@ export default function SearchPage() {
                   <div key={category.id} className="flex items-center mb-2">
                     <Checkbox
                       id={`animal-${category.id}`}
-                      checked={selectedAnimalCategories.includes(category.name)}
+                      checked={selectedAnimalCategories?.includes(category.name)}
                       onCheckedChange={(checked) => handleAnimalCategoryChange(category.name, checked)}
                     />
                     <label htmlFor={`animal-${category.id}`} className="ml-2 text-sm">{category.name}</label>

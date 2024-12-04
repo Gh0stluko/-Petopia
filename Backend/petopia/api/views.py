@@ -161,7 +161,6 @@ def logout(request):
     except Exception as e:
         return Response({'error': 'An error occurred during logout.'}, status=status.HTTP_400_BAD_REQUEST)
       
-
 class CustomUserViewSet(viewsets.ModelViewSet):
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
