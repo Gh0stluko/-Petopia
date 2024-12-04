@@ -15,6 +15,7 @@ import { debounce, set } from 'lodash';
 import {Slider, user} from "@nextui-org/react";
 import Header from '@/components/nav';
 import Cookies from 'js-cookie';
+import Footer from '@/components/Footer';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -62,7 +63,18 @@ export default function SearchPage() {
     }
     return [];
   });
-  const [selectedItemCategories, setSelectedItemCategories] = useState([]);
+  const [selectedItemCategories, setSelectedItemCategories] = useState(() => {
+    const categoryParam = searchParams.get('item_category');
+    if (categoryParam) {
+      // Handle both array and string cases
+      return typeof categoryParam === 'string' 
+        ? categoryParam.split(',')
+        : Array.isArray(categoryParam) 
+          ? categoryParam 
+          : [];
+    }
+    return [];
+  });
   const [priceRange, setPriceRange] = useState({ min: '', max: '' });
   const [maxPrice, setMaxPrice] = useState(1000);
   const [sortBy, setSortBy] = useState('relevance');
@@ -183,12 +195,11 @@ export default function SearchPage() {
       const filters = {
         ...(searchQuery && searchQuery.trim() ? { search: searchQuery } : { search: "" }),
         animal_category: selectedAnimalCategories.length ? selectedAnimalCategories.join(',') : [],
-        item_category: selectedItemCategories,
+        item_category: selectedItemCategories.length ? selectedItemCategories.join(',') : [],
         min_price: priceRange.min,
         max_price: priceRange.max,
         sort_by: sortBy,
       };
-      console.log(filters);
       const filteredResponse = await api.get('/products/', { params: filters });
       setSearchResults(filteredResponse.data);
       setFilteredResults(filteredResponse.data);
@@ -398,6 +409,7 @@ export default function SearchPage() {
           </div>
         </div>
       </motion.main>
+      <Footer />
     {/* Modal */}
     {modalOpen && (
       <AlertDialog open={modalOpen} onOpenChange={setModalOpen}>

@@ -48,7 +48,6 @@ export default function HomePage() {
   const [isHeartClicked, setIsHeartClicked] = useState({})
   const [wishlist, setWishlist] = useState({})
   const [modalOpen, setModalOpen] = useState(false)
-  
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
@@ -222,6 +221,23 @@ export default function HomePage() {
       document.removeEventListener("mousedown", handleClickOutside)
     }
   }, [])
+  const getCategoryType = (category) => {
+    if (!category || !category.id) {
+      return 'unknown';
+    }
+  
+    // More strict comparison checking both id and name
+    const isInAnimal = animalCategories.some(ac => 
+      ac.id === category.id && ac.name === category.name
+    );
+    const isInItem = itemCategories.some(ic => 
+      ic.id === category.id && ic.name === category.name
+    );
+  
+    if (isInAnimal) return 'animal';
+    if (isInItem) return 'item';
+    return 'unknown';
+  };
 
   return (
     <div className="min-h-screen">
@@ -331,7 +347,14 @@ export default function HomePage() {
               <CarouselContent>
                 {categories.map((category, index) => (
                   <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/4">
-                    <Card className="group cursor-pointer">
+                    <Card
+                     className="group cursor-pointer"
+                    onClick={() => {
+                      const categoryType = getCategoryType(category);
+                      console.log('Category:', category.name, 'Type:', getCategoryType(category));
+                      const routeParam = categoryType === 'animal' ? 'animal_category' : 'item_category';
+                      router.push(`/products?${routeParam}=${category.name.toLowerCase()}`);
+                    }}>
                       <CardContent className="p-0">
                         <div className="relative h-40 bg-gray-200 rounded-lg overflow-hidden transition-transform duration-300 group-hover:scale-105">
                           <Image

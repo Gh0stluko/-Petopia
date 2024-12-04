@@ -238,6 +238,7 @@ class ProductViewSet(viewsets.ModelViewSet):
 
         # Item category filter
         item_categories = self.request.query_params.getlist('item_category')
+        print(item_categories)
         if item_categories:
             queryset = queryset.filter(Item_Category__name__in=item_categories)
 
