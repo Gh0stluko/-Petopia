@@ -11,21 +11,22 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
-import decouple
+from decouple import Config, Csv
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
+env_path = BASE_DIR.parent.parent / '.env'
+config = Config(env_path)
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = decouple.config('DJANGO_SECRET_KEY')
+SECRET_KEY = config('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = decouple.config('DJANGO_DEBUG', default=False, cast=bool)
+DEBUG = config('DJANGO_DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = decouple.config('ALLOWED_HOSTS', cast=lambda v: [s.strip() for s in v.split(',')])
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=lambda v: [s.strip() for s in v.split(',')])
 
 # Application definition
 
@@ -50,9 +51,9 @@ AUTHENTICATION_BACKENDS = (
 )
 SOCIAL_AUTH_LOGIN_ERROR_URL = '/user/error/'
 SOCIAL_AUTH_RAISE_EXCEPTIONS = False
-GOOGLE_OAUTH2_CLIENT_ID = decouple.config('GOOGLE_CLIENT_ID')
-SOCIAL_AIUTH_GOOGLE_OAUTH2_KEY = decouple.config('GOOGLE_CLIENT_ID')
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = decouple.config('GOOGLE_CLIENT_SECRET')
+GOOGLE_OAUTH2_CLIENT_ID = config('GOOGLE_CLIENT_ID')
+SOCIAL_AIUTH_GOOGLE_OAUTH2_KEY = config('GOOGLE_CLIENT_ID')
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = config('GOOGLE_CLIENT_SECRET')
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -77,13 +78,13 @@ SIMPLE_JWT = {
 }
 AUTH_USER_MODEL = 'api.CustomUser'
 #DEFINE CROSS ORIGIN RESOURCE SHARING
-CORS_ALLOWED_ORIGINS = decouple.config('CORS_ALLOWED_ORIGINS', cast=lambda v: [s.strip() for s in v.split(',')])
+CORS_ALLOWED_ORIGINS = config('CORS_ALLOWED_ORIGINS', cast=lambda v: [s.strip() for s in v.split(',')])
 
 CSRF_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_HTTPONLY = True  # Allow JavaScript access to the cookie
 CORS_ALLOW_CREDENTIALS = True
 
-CSRF_TRUSTED_ORIGINS = decouple.config("CORS_ALLOWED_ORIGINS", cast=lambda v: [s.strip() for s in v.split(',')])
+CSRF_TRUSTED_ORIGINS = config("CORS_ALLOWED_ORIGINS", cast=lambda v: [s.strip() for s in v.split(',')])
 CORS_EXPOSE_HEADERS = [
     'Cross-Origin-Opener-Policy',
     'Cross-Origin-Embedder-Policy',
@@ -136,10 +137,10 @@ DATABASES = {
 #coonect postgresql
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': decouple.config('DB_NAME'),
-        'USER': decouple.config('DB_USER'),
-        'PASSWORD': decouple.config('DB_PASSWORD'),
-        'HOST': 'localhost' if DEBUG else 'db',
+        'NAME': config('DB_NAME'),
+        'USER': config('DB_USER'),
+        'PASSWORD': config('DB_PASSWORD'),
+        'HOST': 'db',
         'PORT': 5432,
 }
 }

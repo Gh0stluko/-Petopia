@@ -13,7 +13,7 @@ import Cookies from 'js-cookie'
 import { useRouter } from 'next/navigation'
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import Header from "@/components/nav"
-import Footer from '@/components/Footer'
+import Footer from '@/components/footer'
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel"
 import { NewProducts } from '@/components/items'
 import {
