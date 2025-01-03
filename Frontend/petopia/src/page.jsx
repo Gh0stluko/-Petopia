@@ -12,7 +12,7 @@ import Snowfall from 'react-snowfall'
 import Cookies from 'js-cookie'
 import { useRouter } from 'next/navigation'
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
-import { Footer } from '@/components/Footer'
+import { Footer } from '@/components/footer'
 
 const SkeletonLoader = ({ height, width, className }) => (
   <div

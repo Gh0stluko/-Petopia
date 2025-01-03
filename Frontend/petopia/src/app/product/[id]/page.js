@@ -14,7 +14,9 @@ import api from '@/app/services/api';
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster"
 import { useRouter } from 'next/navigation';
-
+import Header from '@/components/nav';
+import Cookies from 'js-cookie';
+import { set } from 'lodash';
 const SkeletonLoader = ({ height, width, className }) => (
   <div className={`animate-pulse bg-gray-200 rounded ${className}`} style={{ height, width }}></div>
 );
@@ -34,8 +36,36 @@ export default function ProductPage() {
   const [direction, setDirection] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const { toast } = useToast()
+  const [cart, setCart] = useState([])
   const router = useRouter();
-  
+  const [showFullDescription, setShowFullDescription] = useState(false);
+  const [userRating, setUserRating] = useState(null);
+  const toggleDescription = () => {
+    setShowFullDescription(!showFullDescription);
+  };
+  const handleStarClick = async (rating) => {
+    if (!user) {
+      toast({
+        title: 'You need to be logged in to submit a review.',
+        status: 'error',
+      });
+      return;
+    }
+    setUserRating(rating);
+    try {
+      await api.post(`/products/1/rate/`, { rating });
+      toast({
+        title: 'Thank you for your review!',
+        status: 'success',
+      });
+    } catch (error) {
+      console.error('Error submitting review:', error);
+      toast({
+        title: 'Failed to submit review',
+        status: 'error',
+      });
+    }
+  };
   const handleLike = () => {
     setIsFilled(!isFilled);
     toast({
@@ -75,6 +105,13 @@ export default function ProductPage() {
             limit: 4
           }
         });
+        const accessToken = Cookies.get('accessToken');
+        if (accessToken) {
+          const userRes = await api.get('/user/me/');
+          setUser(userRes.data);
+          const userreview = await api.get(`/user/get_reviews/`);
+          setUserRating(userreview.data[0].rating);
+        }
         setSimilarProducts(similarResponse.data);
         setIsLoading(false);
       } catch (error) {
@@ -113,9 +150,42 @@ export default function ProductPage() {
     }
   };
 
+  
+  const addToCart = (product) => {
+    setCart(prevCart => {
+      const existingItem = prevCart.find(item => item.id === product.id)
+      if (existingItem) {
+        return prevCart.map(item =>
+          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item);
+      }
+      return [...prevCart, { ...product, quantity: 1 }]
+    })
+  }
+
+  const updateQuantity = (id, delta) => {
+    setCart(prevCart =>
+      prevCart.map(item =>
+        item.id === id
+          ? { ...item, quantity: Math.max(0, item.quantity + delta) }
+          : item).filter(item => item.quantity > 0))
+  }
+
+  const removeFromCart = (id) => {
+    setCart(prevCart => prevCart.filter(item => item.id !== id))
+  }
+
+  const clearCart = () => {
+    setCart([])
+  }
+
+  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0)
+  const totalPrice = cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
+
   if (isLoading || !product) {
     return (
+
       <div className="min-h-screen bg-gray-50">
+      <Header/>
         <motion.header className="sticky top-0 z-50 bg-white shadow-sm">
           <div className="container mx-auto px-4 py-4 flex justify-between items-center">
             <Link href="/" className="flex items-center">
@@ -162,43 +232,19 @@ export default function ProductPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <motion.header className="sticky top-0 z-50 bg-white shadow-sm">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/" className="flex items-center">
-            <div className="w-12 h-12 rounded-full relative">
-              <Image src="/logo.svg" alt="Petopia" fill priority style={{ objectFit: 'contain' }} />
-            </div>
-            <span className="ml-2 text-xl font-bold text-gray-800">Petopia</span>
-          </Link>
-          <form onSubmit={handleSearch} className="flex-grow max-w-2xl mx-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <Input
-                type="search"
-                placeholder="Search products..."
-                className="w-full pl-10 pr-4 py-2 rounded-full"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-          </form>
-          <nav className="flex items-center space-x-4">
-            <Button variant="ghost" size="icon">
-              <ShoppingCart className="h-6 w-6" />
-            </Button>
-            {user ? (
-              <Avatar className="w-8 h-8">
-                <AvatarImage src={user.avatar} alt="User Avatar" />
-                <AvatarFallback>{user.first_name?.[0]}{user.last_name?.[0]}</AvatarFallback>
-              </Avatar>
-            ) : (
-              <Button variant="ghost" size="icon">
-                <UserCircle className="h-6 w-6" />
-              </Button>
-            )}
-          </nav>
-        </div>
-      </motion.header>
+
+      <Header
+      User={user}
+      Search_Included={true}
+      searchQuery={searchQuery} 
+      setSearchQuery={setSearchQuery}
+      handleSearch={handleSearch}
+      cart = {cart}
+      updateQuantity={updateQuantity} 
+      removeFromCart={removeFromCart}
+      clearCart={clearCart}
+      totalItems={totalItems}
+      />
 
       <main className="container mx-auto px-4 py-8">
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
@@ -284,33 +330,43 @@ export default function ProductPage() {
             </div>
 
             <div className="space-y-6">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">{product.name}</h1>
-                <div className="flex items-center mt-2 space-x-4">
-                  <div className="flex items-center">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`h-5 w-5 ${
-                          i < Math.floor(product.rating || 0)
-                            ? 'text-yellow-400 fill-current'
-                            : 'text-gray-300'
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  <span className="text-sm text-gray-500">
-                    {product.reviews_count || 0} reviews
-                  </span>
-                </div>
-              </div>
+            <h1 className="text-3xl font-bold text-gray-900">{product.name}</h1>
+            <div className="flex items-center mt-4 space-x-2">
+        {[1, 2, 3, 4, 5].map((rating) => (
+          <div
+            key={rating}
+            className="relative group"
+            onClick={() => handleStarClick(rating)} // Set user rating on click
+          >
+            {/* Base Star for Average Rating */}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              className={`h-8 w-8 cursor-pointer transition-transform duration-200 ${
+                rating <= product.average_rating
+                  ? 'fill-yellow-300' // Average rating is a lighter yellow
+                  : 'fill-gray-200 hover:fill-yellow-200' // Unselected stars have a subtle hover effect
+              }`}
+            >
+              <path d="M12 .587l3.668 7.431 8.2 1.19-5.917 5.765 1.396 8.127L12 18.897l-7.347 3.863 1.396-8.127-5.917-5.765 8.2-1.19z" />
+            </svg>
+            {/* User Rating Overlay */}
+            {rating <= (userRating || 0) && (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                className="absolute inset-0 h-8 w-8 fill-yellow-500 scale-110"
+              >
+                <path d="M12 .587l3.668 7.431 8.2 1.19-5.917 5.765 1.396 8.127L12 18.897l-7.347 3.863 1.396-8.127-5.917-5.765 8.2-1.19z" />
+              </svg>
+            )}
+          </div>
+        ))}
+        <span className="ml-3 text-sm text-gray-500">
+          ({product.average_rating || 0}) | {product.user_count || 0} reviews 
+        </span>
+      </div>
 
-              <div className="space-y-4">
-                <p className="text-3xl font-bold text-blue-600">
-                  {parseFloat(product.price).toFixed(2)} грн
-                </p>
-                <p className="text-gray-600">{product.description}</p>
-              </div>
 
               <div className="p-6 bg-gray-50 rounded-xl space-y-4">
                 <div className="flex items-center justify-between">

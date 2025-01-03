@@ -19,12 +19,14 @@ services:
     build:
       context: ./Frontend/petopia
     container_name: frontend
-    command: npm run dev
     volumes:
       - ./Frontend/petopia:/app
       - /app/node_modules
+      - build_cache:/app/.next
     environment:
+      - CHOKIDAR_USEPOLLING=true
       - WATCHPACK_POLLING=true
+      - NEXTJS_ENABLE_POLLING=true
     ports:
       - "3000:3000"
     restart: unless-stopped
@@ -46,3 +48,4 @@ services:
 
 volumes:
   postgres_data:
+  build_cache:

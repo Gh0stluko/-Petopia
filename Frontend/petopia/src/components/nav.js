@@ -30,7 +30,7 @@ export default function Header({
   searchQuery, 
   setSearchQuery, 
   handleSearch,
-  Search_Included=false
+  Search_Included=false,
 }) {
   const [isCartOpen, setIsCartOpen] = useState(false)
   const cartRef = useRef(null)

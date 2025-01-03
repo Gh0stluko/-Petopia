@@ -9,28 +9,11 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from .models import CustomUser, Product, Image, Animal_Category,Item_Category, Cart
 from rest_framework import viewsets
-from .serializer import CustomUserSerializer, ProductSerializer, ImageSerializer, AnimalSerializer,ItemSerialiazer, CartSerializer
+from .serializer import CustomUserSerializer, ProductSerializer, ImageSerializer, AnimalSerializer,ItemSerialiazer, CartSerializer, ProductRatingSerializer
 from .models import Product, ProductRating
+from django.views.decorators.csrf import csrf_exempt  # Added import
+from django.utils.decorators import method_decorator
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-class ProductRatingView(APIView):
-    permission_classes = [IsAuthenticated]
-    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
-    def post(self, request, product_id):
-        product = get_object_or_404(Product, id=product_id)
-        rating = request.data.get('rating')
-
-        if not rating or not (1 <= int(rating) <= 5):
-            return Response({"error": "Rating must be between 1 and 5."}, status=status.HTTP_400_BAD_REQUEST)
-
-        ProductRating.objects.update_or_create(
-            product=product,
-            user=request.user,
-            defaults={'rating': rating}
-        )
-
-        return Response({"average_rating": product.average_rating}, status=status.HTTP_200_OK)
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def profile_complete(request):
@@ -160,7 +143,7 @@ def logout(request):
         return response
     except Exception as e:
         return Response({'error': 'An error occurred during logout.'}, status=status.HTTP_400_BAD_REQUEST)
-      
+
 class CustomUserViewSet(viewsets.ModelViewSet):
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
@@ -173,7 +156,20 @@ class CustomUserViewSet(viewsets.ModelViewSet):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    @action(detail=False, methods=['get'], url_path='get_reviews')
+    def get_reviews(self, request):
+        user = request.user
+        product_id = request.query_params.get('product_id')
+        
+        if product_id:
+            reviews = ProductRating.objects.filter(user=user, product_id=product_id)
+        else:
+            reviews = ProductRating.objects.filter(user=user)
+        
+        serializer = ProductRatingSerializer(reviews, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     
+
     @action(detail=False, methods=['put'], url_path='update_wishlist')
     def update_wishlist(self, request):
         user = request.user
@@ -218,7 +214,23 @@ from django.db.models import Q, Max
 class ProductViewSet(viewsets.ModelViewSet):
     serializer_class = ProductSerializer
     queryset = Product.objects.prefetch_related('ratings')
+    @action(detail=True, methods=['post'])
+    def rate(self, request, pk=None):
+        product = self.get_object()
+        rating = request.data.get('rating')
+        print(rating)
+        print(request.user)
 
+        if not rating or not (1 <= int(rating) <= 5):
+            return Response({"error": "Rating must be between 1 and 5."}, status=status.HTTP_400_BAD_REQUEST)
+
+        ProductRating.objects.update_or_create(
+            product=product,
+            user=request.user,
+            defaults={'rating': rating}
+        )
+
+        return Response({"average_rating": product.average_rating}, status=status.HTTP_200_OK)
     def get_queryset(self):
         queryset = Product.objects.prefetch_related('ratings')
 

@@ -15,7 +15,7 @@ import { debounce, set } from 'lodash';
 import {Slider, user} from "@nextui-org/react";
 import Header from '@/components/nav';
 import Cookies from 'js-cookie';
-import Footer from '@/components/Footer';
+import Footer from '@/components/footer';
 import {
   AlertDialog,
   AlertDialogAction,

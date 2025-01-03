@@ -1,7 +1,7 @@
 from django.urls import path
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-from .views import CustomUserViewSet, ProductViewSet, ImageViewSet, ItemCategoryViewSet, AnimalCategoryViewSet, CartViewSet, ProductRatingView
+from .views import CustomUserViewSet, ProductViewSet, ImageViewSet, ItemCategoryViewSet, AnimalCategoryViewSet, CartViewSet
 from rest_framework.routers import DefaultRouter
 from django.urls import path, include
 from . import views
@@ -18,7 +18,6 @@ urlpatterns = [
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('auth/google/', views.google_auth, name='google_auth'),
     path('', include(router.urls)),
-    path('products/<int:product_id>/rate/', views.ProductRating, name='rate-product'),
     path('change-password/', views.change_password, name='change-password'),
     path('delete-account/', views.delete_account, name='delete-account'),
     path('profile-complete/', views.profile_complete, name='profile-complete'),
