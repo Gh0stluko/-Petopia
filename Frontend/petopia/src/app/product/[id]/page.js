@@ -20,7 +20,7 @@ import { set } from 'lodash';
 const SkeletonLoader = ({ height, width, className }) => (
   <div className={`animate-pulse bg-gray-200 rounded ${className}`} style={{ height, width }}></div>
 );
-
+import Footer from '@/components/footer';
 export default function ProductPage() {
   const params = useParams();
   const searchParams = useSearchParams();
@@ -187,6 +187,10 @@ export default function ProductPage() {
             limit: 4
           }
         });
+        const filteredSimilarProducts = similarResponse.data.filter(
+          (item) => item.id !== parseInt(params.id)
+        );
+        setSimilarProducts(filteredSimilarProducts);
         const accessToken = Cookies.get('accessToken');
         if (accessToken) {
           const userRes = await api.get('/user/me/');
@@ -194,7 +198,7 @@ export default function ProductPage() {
           const userreview = await api.get(`/user/get_reviews/`);
           setUserRating(userreview.data[0].rating);
         }
-        setSimilarProducts(similarResponse.data);
+        console.log(similarResponse.data[0].id);
         setIsLoading(false);
       } catch (error) {
         console.error('Error:', error);
@@ -556,6 +560,7 @@ export default function ProductPage() {
               )}
         </div>
       </main>
+      <Footer/>
       <Toaster />
     </div>
   );
