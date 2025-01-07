@@ -368,8 +368,8 @@ export default function ProductPage() {
       </div>
 
 
-              <div className="p-6 bg-gray-50 rounded-xl space-y-4">
-                <div className="flex items-center justify-between">
+              <div className="w-full max-w-4xl mx-auto space-y-4">
+                <div className="flex items-center justify-between ">
                   <span className="text-gray-700 font-medium">Quantity</span>
                   <div className="flex items-center space-x-4">
                     <Button
@@ -412,54 +412,63 @@ export default function ProductPage() {
               </div>
 
               <div className="border-t pt-6">
-                <h3 className="font-semibold mb-4">Product Details</h3>
-                <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  {Object.entries(product.specifications || {}).map(([key, value]) => (
-                    <div key={key} className="flex justify-between">
-                      <dt className="text-gray-600">{key}</dt>
-                      <dd className="font-medium text-gray-900">{value}</dd>
-                    </div>
-                  ))}
-                </dl>
-              </div>
-            </div>
-          </div>
-
-          {similarProducts.length > 0 && (
-            <div className="border-t">
-              <div className="p-8">
-                <h2 className="text-2xl font-bold mb-6">Similar Products</h2>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                  {similarProducts.map((item) => (
-                    <Link key={item.id} href={`/product/${item.id}`}>
-                      <Card className="h-full hover:shadow-lg transition-shadow">
-                        <div className="relative h-48">
-                          <Image
-                            src={item.images[0]?.image || '/placeholder.png'}
-                            alt={item.name}
-                            fill
-                            className="object-cover rounded-t-lg"
-                          />
-                        </div>
-                        <CardContent className="p-4">
-                          <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
-                            {item.name}
-                          </h3>
-                          <p className="text-blue-600 font-bold">
-                            {parseFloat(item.price).toFixed(2)} грн
-                          </p>
-                        </CardContent>
-                      </Card>
-                    </Link>
-                  ))}
+                <div className="space-y-4">
+                  <h3 className="font-semibold">Product Description</h3>
+                  <div className="relative">
+                    <p className={`text-gray-700 whitespace-pre-wrap break-words ${
+                      showFullDescription ? '' : 'line-clamp-3'
+                    }`}>
+                      {product.description}
+                    </p>
+                    {product.description && product.description.length > 100 && (
+                      <button
+                        onClick={toggleDescription}
+                        className="text-blue-600 hover:text-blue-800 mt-2 text-sm font-medium"
+                      >
+                        {showFullDescription ? 'Show less' : 'Show more'}
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
+
+
             </div>
-          )}
+          </div>
+          {similarProducts.length > 0 && (
+                <div className="border-t mt-8">
+                  <div className="p-8">
+                    <h2 className="text-2xl font-bold mb-6">Similar Products</h2>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                      {similarProducts.map((item) => (
+                        <Link key={item.id} href={`/product/${item.id}`}>
+                          <Card className="h-full hover:shadow-lg transition-shadow">
+                            <div className="relative h-48">
+                              <Image
+                                src={item.images[0]?.image || '/placeholder.png'}
+                                alt={item.name}
+                                fill
+                                className="object-cover rounded-t-lg"
+                              />
+                            </div>
+                            <CardContent className="p-4">
+                              <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
+                                {item.name}
+                              </h3>
+                              <p className="text-blue-600 font-bold">
+                                {parseFloat(item.price).toFixed(2)} грн
+                              </p>
+                            </CardContent>
+                          </Card>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
         </div>
       </main>
       <Toaster />
     </div>
   );
 }
-
