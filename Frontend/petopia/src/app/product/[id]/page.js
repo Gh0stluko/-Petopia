@@ -40,8 +40,90 @@ export default function ProductPage() {
   const router = useRouter();
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [userRating, setUserRating] = useState(null);
+  const [wishlist, setWishlist] = useState({})
+  const [isHeartClicked, setIsHeartClicked] = useState({})
   const toggleDescription = () => {
     setShowFullDescription(!showFullDescription);
+  };
+  useEffect(() => {
+    const fetchWishlist = async () => {
+      try {
+        if (!user) {
+          return;
+        }
+        const wishresponse = await api.get('/user/me/');
+        const wishlistData = wishresponse.data.wishlist;
+  
+        setWishlist(wishlistData);
+  
+        const heartState = {};
+        wishlistData.forEach(productId => {
+          heartState[productId] = true;
+        });
+  
+        setIsHeartClicked(heartState);
+        console.log(heartState)
+      } catch (error) {
+        console.error('Error fetching wishlist:', error);
+      }
+    };
+  
+    fetchWishlist();
+  }, [user]);
+
+  const handlewishlist = async (id) => {
+    if (!user) {
+      toast({
+        title: 'You need to be logged in to submit a review.',
+        status: 'error',
+      });
+      return;
+    }
+    else {
+      try {
+        setWishlist(prevWishlist => {
+          const isInWishlist = prevWishlist[id];
+          if (isInWishlist) {
+            const { [id]: _, ...rest } = prevWishlist;
+            return rest;
+          }
+          return {
+            ...prevWishlist,
+            [id]: true
+          };
+        });
+    
+        setIsHeartClicked(prev => ({
+          ...prev,
+          [id]: !prev[id]
+        }));
+    
+        const response = await api.put('/user/update_wishlist/', { 
+          product_id: id 
+        });
+        
+        console.log('Wishlist updated on server', response.data);
+      } catch (error) {
+        setWishlist(prevWishlist => {
+          const isInWishlist = prevWishlist[id];
+          if (!isInWishlist) {
+            const { [id]: _, ...rest } = prevWishlist;
+            return rest;
+          }
+          return {
+            ...prevWishlist,
+            [id]: true
+          };
+        });
+        
+        setIsHeartClicked(prev => ({
+          ...prev,
+          [id]: !prev[id]
+        }));
+    
+        console.error('Error updating wishlist:', error);
+      }
+    }
   };
   const handleStarClick = async (rating) => {
     if (!user) {
@@ -401,12 +483,18 @@ export default function ProductPage() {
                     variant="outline" 
                     size="icon" 
                     className="h-12 w-12"
-                    onClick={handleLike}
+                    onClick={() => {
+                      handlewishlist(product.id);
+                      toast({
+                        title: isHeartClicked[product.id] ? 'Removed from wishlist' : 'Added to wishlist',
+                        status: isHeartClicked[product.id] ? 'error' : 'success',
+                      });
+                    }}
                   >
                     <Heart 
-                      className={`h-5 w-5 ${isFilled ? 'fill-black' : ''}`}
+                      className={`h-5 w-5 ${isHeartClicked[product.id] ? 'fill-black' : ''}`}
                     />
-                    <span className="sr-only">{isFilled ? 'Remove from favorites' : 'Add to favorites'}</span>
+                    <span className="sr-only">{isHeartClicked[product.id] ? 'Remove from favorites' : 'Add to favorites'}</span>
                   </Button>
                 </div>
               </div>
