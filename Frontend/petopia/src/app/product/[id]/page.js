@@ -271,7 +271,6 @@ export default function ProductPage() {
     return (
 
       <div className="min-h-screen bg-gray-50">
-      <Header/>
         <motion.header className="sticky top-0 z-50 bg-white shadow-sm">
           <div className="container mx-auto px-4 py-4 flex justify-between items-center">
             <Link href="/" className="flex items-center">
