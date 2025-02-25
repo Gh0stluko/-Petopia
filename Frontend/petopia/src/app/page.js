@@ -34,8 +34,6 @@ const SkeletonLoader = ({ height, width, className }) => (
 
 export default function HomePage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [isCartOpen, setIsCartOpen] = useState(false)
-  const [cart, setCart] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const cartRef = useRef(null)
   const [animalCategories, setAnimalCategories] = useState([])
@@ -48,6 +46,7 @@ export default function HomePage() {
   const [isHeartClicked, setIsHeartClicked] = useState({})
   const [wishlist, setWishlist] = useState({})
   const [modalOpen, setModalOpen] = useState(false)
+  
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
@@ -152,55 +151,10 @@ export default function HomePage() {
       }
     }
   };
+  
   useEffect(() => {
     setCategories([...animalCategories, ...itemCategories])
   }, [animalCategories, itemCategories])
-
-  const addToCart = (product) => {
-    setCart(prevCart => {
-      const existingItem = prevCart.find(item => item.id === product.id)
-      if (existingItem) {
-        return prevCart.map(item =>
-          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
-        )
-      }
-      return [...prevCart, { ...product, quantity: 1 }]
-    })
-  }
-
-  useEffect(() => {
-    const savedCart = localStorage.getItem('cart')
-    if (savedCart) {
-      setCart(JSON.parse(savedCart))
-    }
-  }, [])
-
-  useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(cart))
-  }, [cart])
-
-  const updateQuantity = (id, delta) => {
-    setCart(prevCart =>
-      prevCart.map(item =>
-        item.id === id
-          ? { ...item, quantity: Math.max(0, item.quantity + delta) }
-          : item
-      ).filter(item => item.quantity > 0)
-    )
-  }
-
-
-
-  const removeFromCart = (id) => {
-    setCart(prevCart => prevCart.filter(item => item.id !== id))
-  }
-
-  const clearCart = () => {
-    setCart([])
-  }
-
-  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0)
-  const totalPrice = cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
 
   const handleSearch = (e) => {
     e.preventDefault()
@@ -209,18 +163,6 @@ export default function HomePage() {
     }
   }
 
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (cartRef.current && !cartRef.current.contains(event.target)) {
-        setIsCartOpen(false)
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
-    }
-  }, [])
   const getCategoryType = (category) => {
     if (!category || !category.id) {
       return 'unknown';
@@ -244,11 +186,6 @@ export default function HomePage() {
         <CustomBackgroundDecoration />
 
       <Header
-        cart={cart}
-        updateQuantity={updateQuantity}
-        removeFromCart={(id) => setCart(cart.filter(item => item.id !== id))}
-        clearCart={() => setCart([])}
-        totalItems={totalItems}
         User={User}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}

@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster"
 import { useRouter } from 'next/navigation';
 import Header from '@/components/nav';
+import { useCart } from '@/contexts/CartContext';
 import Cookies from 'js-cookie';
 import { set } from 'lodash';
 const SkeletonLoader = ({ height, width, className }) => (
@@ -35,13 +36,14 @@ export default function ProductPage() {
   const [isFilled, setIsFilled] = useState(false);
   const [direction, setDirection] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
-  const { toast } = useToast()
-  const [cart, setCart] = useState([])
+  const { toast } = useToast();
+  const { addToCart, addToCartWithQuantity, isCartOpen, toggleCart } = useCart();
   const router = useRouter();
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [userRating, setUserRating] = useState(null);
   const [wishlist, setWishlist] = useState({})
   const [isHeartClicked, setIsHeartClicked] = useState({})
+  
   const toggleDescription = () => {
     setShowFullDescription(!showFullDescription);
   };
@@ -236,36 +238,19 @@ export default function ProductPage() {
     }
   };
 
-  
-  const addToCart = (product) => {
-    setCart(prevCart => {
-      const existingItem = prevCart.find(item => item.id === product.id)
-      if (existingItem) {
-        return prevCart.map(item =>
-          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item);
-      }
-      return [...prevCart, { ...product, quantity: 1 }]
-    })
-  }
-
-  const updateQuantity = (id, delta) => {
-    setCart(prevCart =>
-      prevCart.map(item =>
-        item.id === id
-          ? { ...item, quantity: Math.max(0, item.quantity + delta) }
-          : item).filter(item => item.quantity > 0))
-  }
-
-  const removeFromCart = (id) => {
-    setCart(prevCart => prevCart.filter(item => item.id !== id))
-  }
-
-  const clearCart = () => {
-    setCart([])
-  }
-
-  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0)
-  const totalPrice = cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
+  // Функція додавання товару до кошика з вказаною кількістю
+  const handleAddToCart = () => {
+    if (!product) return;
+    
+    // Використовуємо нову функцію для додавання товару з кількістю
+    addToCartWithQuantity(product, quantity, (addedProduct, wasInCart, qty) => {
+      toast({
+        title: `${addedProduct.name} added to your cart`,
+        description: `${qty} item${qty > 1 ? 's' : ''} added to your shopping cart`,
+        status: "success"
+      });
+    });
+  };
 
   if (isLoading || !product) {
     return (
@@ -324,11 +309,6 @@ export default function ProductPage() {
       searchQuery={searchQuery} 
       setSearchQuery={setSearchQuery}
       handleSearch={handleSearch}
-      cart = {cart}
-      updateQuantity={updateQuantity} 
-      removeFromCart={removeFromCart}
-      clearCart={clearCart}
-      totalItems={totalItems}
       />
 
       <main className="container mx-auto px-4 py-8">
@@ -478,7 +458,7 @@ export default function ProductPage() {
                 </div>
 
                 <div className="flex space-x-4">
-                  <Button className="flex-1 h-12">
+                  <Button className="flex-1 h-12" onClick={handleAddToCart}>
                     <ShoppingCart className="mr-2 h-5 w-5" />
                     Add to Cart
                   </Button>
