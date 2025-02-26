@@ -533,10 +533,19 @@ export default function ProductPage() {
                       className="h-12 w-12 relative group"
                       onClick={() => {
                         handlewishlist(product.id);
-                        toast({
-                          title: isHeartClicked[product.id] ? 'Removed from wishlist' : 'Added to wishlist',
-                          status: isHeartClicked[product.id] ? 'error' : 'success',
-                        });
+                        if (!user) {
+                          toast({
+                            title: 'Please login to add to wishlist',
+                            status: 'error',
+                          });
+                          return;
+                        }
+                        else{
+                          toast({
+                            title: isHeartClicked[product.id] ? 'Removed from wishlist' : 'Added to wishlist',
+                            status: isHeartClicked[product.id] ? 'error' : 'success',
+                          });
+                        }
                       }}
                     >
                       <Heart 
