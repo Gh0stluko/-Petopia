@@ -75,8 +75,11 @@ export default function CartPage() {
                 </div>
                 
                 <div className="flex-grow">
-                  <Link href={`/product/${item.id}`} className="hover:underline">
-                    <h3 className="font-medium">{item.name}</h3>
+                  <Link 
+                    href={`/product/${item.id}`} 
+                    className="inline-block hover:text-primary transition-colors"
+                  >
+                    <h3 className="font-medium text-lg mb-1">{item.name}</h3>
                   </Link>
                   <p className="text-primary font-semibold mt-1">
                     ${(item.price * item.quantity).toFixed(2)}

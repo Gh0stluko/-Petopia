@@ -8,6 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { motion, AnimatePresence } from 'framer-motion'
 import { useCart } from '@/contexts/CartContext'
 import { useToast } from "@/hooks/use-toast"
+import Link from 'next/link'
 
 export default function CartComponent() {
   const { 
@@ -92,7 +93,13 @@ export default function CartComponent() {
                           <Image src={item.images[0].image} alt={item.name} fill style={{ objectFit: 'cover' }} />
                         </div>
                         <div>
-                          <h3 className="font-semibold">{item.name}</h3>
+                          <Link 
+                            href={`/product/${item.id}`} 
+                            className="hover:text-primary transition-colors"
+                            onClick={() => closeCart()}
+                          >
+                            <h3 className="font-semibold">{item.name}</h3>
+                          </Link>
                           <p className="text-sm text-muted-foreground">${Math.floor(item.price)}</p>
                         </div>
                       </div>
