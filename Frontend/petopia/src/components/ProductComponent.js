@@ -10,6 +10,15 @@ export function ProductCard({ product, handlewishlist, isHeartClicked }) {
   const { toast } = useToast();
   
   const handleAddToCart = () => {
+    if (product.stock === 0) {
+      toast({
+        title: "Out of Stock",
+        description: "This product is currently unavailable",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     addToCart(product, (addedProduct, wasInCart) => {
       toast({
         title: wasInCart 
@@ -50,15 +59,30 @@ export function ProductCard({ product, handlewishlist, isHeartClicked }) {
             size="icon"
             aria-label="Add to cart"
             onClick={handleAddToCart}
+            disabled={product.stock === 0}
           >
             <ShoppingCart className="w-5 h-5 text-muted-foreground" />
           </Button>
         </div>
+        
+        {/* Stock Status Badge */}
+        <div className="absolute left-5 top-5 z-10">
+          {product.stock > 0 ? (
+            <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
+              In Stock
+            </span>
+          ) : (
+            <span className="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">
+              Out of Stock
+            </span>
+          )}
+        </div>
+
         <div className="aspect-square mb-3">
           <img
             src={product.images[0].image}
             alt={product.name}
-            className="w-full h-full object-cover rounded-md"
+            className={`w-full h-full object-cover rounded-md ${product.stock === 0 ? 'opacity-70' : ''}`}
           />
         </div>
         <div className="space-y-2">

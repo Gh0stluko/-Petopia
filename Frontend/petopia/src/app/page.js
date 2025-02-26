@@ -231,31 +231,54 @@ export default function HomePage() {
       </section>
 
       {/* New Products */}
-      <NewProducts products={products} handlewishlist={handlewishlist} isHeartClicked={isHeartClicked} title = "New products" isLoading={isLoading} />
+      <NewProducts 
+        products={[
+          ...products.filter(product => product.stock > 0),
+          ...products.filter(product => product.stock === 0)
+        ]} 
+        handlewishlist={handlewishlist} 
+        isHeartClicked={isHeartClicked} 
+        title = "New products" 
+        isLoading={isLoading} 
+      />
 
       {/* Dogs products */}
       <NewProducts 
-      products={products.filter(product =>
-        product.Animal_Category.some(category => category.name.toLowerCase() === 'dogs')
-      )}
-      handlewishlist={handlewishlist} 
-      isHeartClicked={isHeartClicked}
-      title={"Dog's products"}
-      isLoading={isLoading}
-      href='products?animal_category=dogs'
-    />
+        products={[
+          ...products.filter(product => 
+            product.Animal_Category.some(category => category.name.toLowerCase() === 'dogs') && 
+            product.stock > 0
+          ),
+          ...products.filter(product => 
+            product.Animal_Category.some(category => category.name.toLowerCase() === 'dogs') && 
+            product.stock === 0
+          )
+        ]}
+        handlewishlist={handlewishlist} 
+        isHeartClicked={isHeartClicked}
+        title={"Dog's products"}
+        isLoading={isLoading}
+        href='products?animal_category=dogs'
+      />
 
       {/* Cat products */}
       <NewProducts 
-      products={products.filter(product =>
-        product.Animal_Category.some(category => category.name.toLowerCase() === 'cats')
-      )}
-      handlewishlist={handlewishlist} 
-      isHeartClicked={isHeartClicked}
-      title={"Cat's products"}
-      isLoading={isLoading}
-      href='products?animal_category=cats'
-    />
+        products={[
+          ...products.filter(product => 
+            product.Animal_Category.some(category => category.name.toLowerCase() === 'cats') && 
+            product.stock > 0
+          ),
+          ...products.filter(product => 
+            product.Animal_Category.some(category => category.name.toLowerCase() === 'cats') && 
+            product.stock === 0
+          )
+        ]}
+        handlewishlist={handlewishlist} 
+        isHeartClicked={isHeartClicked}
+        title={"Cat's products"}
+        isLoading={isLoading}
+        href='products?animal_category=cats'
+      />
       {/* All Categories */}
       <section className="py-12 bg-gray-50">
         <div className="container mx-auto px-4">
