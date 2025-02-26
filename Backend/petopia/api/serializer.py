@@ -29,6 +29,10 @@ class ProductRatingSerializer(serializers.ModelSerializer):
         model = ProductRating
         fields = '__all__'
 
+class ItemCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Item_Category
+        fields = '__all__'
 
 class ProductSerializer(serializers.ModelSerializer):
     average_rating = serializers.SerializerMethodField()
@@ -36,7 +40,7 @@ class ProductSerializer(serializers.ModelSerializer):
 
     images = ImageSerializer(many=True, read_only=True)
     Animal_Category = AnimalSerializer(many=True)
-
+    Item_Category = ItemCategorySerializer(many=True)
     class Meta:
         model = Product
         fields = '__all__'

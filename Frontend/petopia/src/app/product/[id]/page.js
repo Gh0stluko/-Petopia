@@ -37,7 +37,7 @@ export default function ProductPage() {
   const [direction, setDirection] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const { toast } = useToast();
-  const { addToCart, addToCartWithQuantity, isCartOpen, toggleCart } = useCart();
+  const { addToCart, addToCartWithQuantity, cart } = useCart();
   const router = useRouter();
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [userRating, setUserRating] = useState(null);
@@ -182,6 +182,7 @@ export default function ProductPage() {
       try {
         const productResponse = await api.get(`/products/${params.id}`);
         setProduct(productResponse.data);
+        console.log(productResponse.data);
         const similarResponse = await api.get('/products/', {
           params: {
             category: productResponse.data.animal_category?.id,
@@ -238,15 +239,19 @@ export default function ProductPage() {
     }
   };
 
-  // Функція додавання товару до кошика з вказаною кількістю
+  // Add this function to check if product is in cart
+  const getCartItem = () => {
+    return cart.find(item => item.id === product.id);
+  };
+
+  // Update the handleAddToCart function
   const handleAddToCart = () => {
     if (!product) return;
     
-    // Використовуємо нову функцію для додавання товару з кількістю
-    addToCartWithQuantity(product, quantity, (addedProduct, wasInCart, qty) => {
+    addToCartWithQuantity(product, 1, (addedProduct, wasInCart, qty) => {
       toast({
         title: `${addedProduct.name} added to your cart`,
-        description: `${qty} item${qty > 1 ? 's' : ''} added to your shopping cart`,
+        description: `Item added to your shopping cart`,
         status: "success"
       });
     });
@@ -395,96 +400,189 @@ export default function ProductPage() {
             </div>
 
             <div className="space-y-6">
-            <h1 className="text-3xl font-bold text-gray-900">{product.name}</h1>
-            <div className="flex items-center mt-4 space-x-2">
-        {[1, 2, 3, 4, 5].map((rating) => (
-          <div
-            key={rating}
-            className="relative group"
-            onClick={() => handleStarClick(rating)} // Set user rating on click
-          >
-            {/* Base Star for Average Rating */}
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              className={`h-8 w-8 cursor-pointer transition-transform duration-200 ${
-                rating <= product.average_rating
-                  ? 'fill-yellow-300' // Average rating is a lighter yellow
-                  : 'fill-gray-200 hover:fill-yellow-200' // Unselected stars have a subtle hover effect
-              }`}
-            >
-              <path d="M12 .587l3.668 7.431 8.2 1.19-5.917 5.765 1.396 8.127L12 18.897l-7.347 3.863 1.396-8.127-5.917-5.765 8.2-1.19z" />
-            </svg>
-            {/* User Rating Overlay */}
-            {rating <= (userRating || 0) && (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                className="absolute inset-0 h-8 w-8 fill-yellow-500 scale-110"
-              >
-                <path d="M12 .587l3.668 7.431 8.2 1.19-5.917 5.765 1.396 8.127L12 18.897l-7.347 3.863 1.396-8.127-5.917-5.765 8.2-1.19z" />
-              </svg>
-            )}
-          </div>
-        ))}
-        <span className="ml-3 text-sm text-gray-500">
-          ({product.average_rating || 0}) | {product.user_count || 0} reviews 
-        </span>
-      </div>
+              <div className="flex flex-col space-y-4">
+                {/* Product Title, Categories and Price */}
+                <div className="bg-white p-6 rounded-lg shadow-sm">
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {product.Animal_Category?.map((category) => (
+                      <Link 
+                        key={`animal-${category.id}`}
+                        href={`/products?animal_category=${category.name?.toLowerCase() || category.name}`}
+                        className="px-3 py-1 bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-700 
+                        rounded-full text-sm hover:from-purple-500/30 hover:to-pink-500/30 transition-all 
+                        duration-300 ease-in-out border border-purple-200 shadow-sm hover:shadow-md"
+                      >
+                        🐾 {category.name}
+                      </Link>
+                    ))}
+                    {product.Item_Category?.map((category) => {
+                      if (!category || !category.name) {
+                        console.log('Invalid category:', category);
+                        return null;
+                      }
+                      return (
+                        <Link 
+                          key={`item-${category.id}`}
+                          href={`/products?item_category=${category.name}`}
+                          className="px-3 py-1 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 text-blue-700 
+                          rounded-full text-sm hover:from-blue-500/30 hover:to-cyan-500/30 transition-all 
+                          duration-300 ease-in-out border border-blue-200 shadow-sm hover:shadow-md"
+                        >
+                          ✨ {category.name}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                  <h1 className="text-2xl font-medium text-gray-800 mb-2 leading-relaxed">{product.name}</h1>
+                  
+                  {/* Price */}
+                  <div className="mb-3">
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-3xl font-bold text-primary">
+                        ${Math.floor(product.price)}
+                      </span>
+                      {product.discount > 0 && (
+                        <>
+                          <span className="text-lg text-gray-500 line-through">
+                            ${Math.floor(product.price * (1 + product.discount/100))}
+                          </span>
+                          <span className="text-sm font-semibold text-green-500">
+                            {product.discount}% OFF
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </div>
 
+                  <div className="flex items-center gap-4 pt-4 border-t">
+                    {product.brand && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-500">Brand:</span>
+                        <span className="font-medium text-gray-900">{product.brand}</span>
+                      </div>
+                    )}
+                    {product.sku && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-500">SKU:</span>
+                        <span className="font-medium text-gray-900">{product.sku}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
 
-              <div className="w-full max-w-4xl mx-auto space-y-4">
-                <div className="flex items-center justify-between ">
-                  <span className="text-gray-700 font-medium">Quantity</span>
-                  <div className="flex items-center space-x-4">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => quantity > 1 && setQuantity(q => q - 1)}
+                {/* Delivery Info */}
+                <div className="bg-white p-6 rounded-lg shadow-sm">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-4 4l-4 4m0-4l4 4" />
+                      </svg>
+                      <span>Free delivery for orders over $50</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                      </svg>
+                      <span>30-day return policy</span>
+                    </div>
+                  </div>
+
+                  {/* Stock Status */}
+                  <div className="py-4 border-t mt-4">
+                    <div className="flex items-center gap-2">
+                      {product.stock > 0 ? (
+                        <>
+                          <span className="h-2 w-2 rounded-full bg-green-500"></span>
+                          <span className="text-sm font-medium text-green-600">In Stock</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="h-2 w-2 rounded-full bg-red-500"></span>
+                          <span className="text-sm font-medium text-red-600">Out of Stock</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex space-x-4">
+                    {getCartItem() ? (
+                      <Button 
+                        className="flex-1 h-12"
+                        variant="outline"
+                        onClick={() => router.push('/cart')}
+                      >
+                        <ShoppingCart className="mr-2 h-5 w-5" />
+                        View in Cart
+                      </Button>
+                    ) : (
+                      <Button 
+                        className="flex-1 h-12 relative group"
+                        onClick={handleAddToCart}
+                        disabled={product.stock === 0}
+                      >
+                        <span className="absolute inset-0 bg-white/10 group-hover:scale-x-100 scale-x-0 transition-transform origin-left duration-300"></span>
+                        <ShoppingCart className="mr-2 h-5 w-5" />
+                        {product.stock > 0 ? 'Add to Cart' : 'Out of Stock'}
+                      </Button>
+                    )}
+
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      className="h-12 w-12 relative group"
+                      onClick={() => {
+                        handlewishlist(product.id);
+                        toast({
+                          title: isHeartClicked[product.id] ? 'Removed from wishlist' : 'Added to wishlist',
+                          status: isHeartClicked[product.id] ? 'error' : 'success',
+                        });
+                      }}
                     >
-                      <MinusCircle className="h-4 w-4" />
-                      <span className="sr-only">Decrease quantity</span>
-                    </Button>
-                    <span className="text-xl font-semibold w-8 text-center">{quantity}</span>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setQuantity(q => q + 1)}
-                    >
-                      <PlusCircle className="h-4 w-4" />
-                      <span className="sr-only">Increase quantity</span>
+                      <Heart 
+                        className={`h-5 w-5 transition-colors duration-300 ${isHeartClicked[product.id] ? 'fill-red-500 text-red-500' : ''}`}
+                      />
+                      <span className="sr-only">
+                        {isHeartClicked[product.id] ? 'Remove from favorites' : 'Add to favorites'}
+                      </span>
                     </Button>
                   </div>
                 </div>
 
-                <div className="flex space-x-4">
-                  <Button className="flex-1 h-12" onClick={handleAddToCart}>
-                    <ShoppingCart className="mr-2 h-5 w-5" />
-                    Add to Cart
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="icon" 
-                    className="h-12 w-12"
-                    onClick={() => {
-                      handlewishlist(product.id);
-                      toast({
-                        title: isHeartClicked[product.id] ? 'Removed from wishlist' : 'Added to wishlist',
-                        status: isHeartClicked[product.id] ? 'error' : 'success',
-                      });
-                    }}
-                  >
-                    <Heart 
-                      className={`h-5 w-5 ${isHeartClicked[product.id] ? 'fill-black' : ''}`}
-                    />
-                    <span className="sr-only">{isHeartClicked[product.id] ? 'Remove from favorites' : 'Add to favorites'}</span>
-                  </Button>
+                {/* Product Features */}
+                <div className="bg-white p-6 rounded-lg shadow-sm">
+                  <h3 className="font-semibold mb-4">Product Features</h3>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div className="flex items-center gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>Premium Quality</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>Pet-friendly Materials</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>Durable Design</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>Easy to Clean</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
 
-              <div className="border-t pt-6">
-                <div className="space-y-4">
-                  <h3 className="font-semibold">Product Description</h3>
+                {/* Product Description */}
+                <div className="bg-white p-6 rounded-lg shadow-sm">
+                  <h3 className="font-semibold mb-4">Product Description</h3>
                   <div className="relative">
                     <p className={`text-gray-700 whitespace-pre-wrap break-words ${
                       showFullDescription ? '' : 'line-clamp-3'
@@ -494,7 +592,7 @@ export default function ProductPage() {
                     {product.description && product.description.length > 100 && (
                       <button
                         onClick={toggleDescription}
-                        className="text-blue-600 hover:text-blue-800 mt-2 text-sm font-medium"
+                        className="text-primary hover:text-primary/80 mt-2 text-sm font-medium"
                       >
                         {showFullDescription ? 'Show less' : 'Show more'}
                       </button>
@@ -502,8 +600,6 @@ export default function ProductPage() {
                   </div>
                 </div>
               </div>
-
-
             </div>
           </div>
           {similarProducts.length > 0 && (
