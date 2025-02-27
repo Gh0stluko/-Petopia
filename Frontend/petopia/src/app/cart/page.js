@@ -3,16 +3,22 @@
 import { useState } from 'react'
 import { useCart } from '@/contexts/CartContext'
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { MinusCircle, PlusCircle, Trash2 } from 'lucide-react'
+import Image from 'next/image'
 import Header from '@/components/nav'
 import Footer from '@/components/footer'
 import { useToast } from "@/hooks/use-toast"
 import Link from 'next/link'
-import { CartItem } from '@/components/CartItem'
 
 export default function CartPage() {
   const { cart, updateQuantity, removeFromCart, totalPrice } = useCart()
   const { toast } = useToast()
   const [user, setUser] = useState(null)
+
+  const handleUpdateQuantity = (productId, delta) => {
+    updateQuantity(productId, delta)
+  }
 
   const handleRemoveItem = (item) => {
     removeFromCart(item.id, (removedItem) => {
@@ -57,13 +63,54 @@ export default function CartPage() {
             {cart.map((item) => (
               <div 
                 key={item.id} 
-                className="bg-white rounded-lg shadow-sm"
+                className="bg-white rounded-lg shadow-sm p-4 flex items-center gap-4"
               >
-                <CartItem
-                  item={item}
-                  onUpdateQuantity={updateQuantity}
-                  onRemove={handleRemoveItem}
-                />
+                <div className="relative w-24 h-24 flex-shrink-0">
+                  <Image
+                    src={item.images[0].image}
+                    alt={item.name}
+                    fill
+                    className="object-cover rounded-md"
+                  />
+                </div>
+                
+                <div className="flex-grow">
+                  <Link 
+                    href={`/product/${item.id}`} 
+                    className="inline-block hover:text-primary transition-colors"
+                  >
+                    <h3 className="font-medium text-lg mb-1">{item.name}</h3>
+                  </Link>
+                  <p className="text-primary font-semibold mt-1">
+                    ${(item.price * item.quantity).toFixed(2)}
+                  </p>
+                  <div className="flex items-center gap-4 mt-2">
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => handleUpdateQuantity(item.id, -1)}
+                      >
+                        <MinusCircle className="h-4 w-4" />
+                      </Button>
+                      <span className="w-8 text-center">{item.quantity}</span>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => handleUpdateQuantity(item.id, 1)}
+                      >
+                        <PlusCircle className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleRemoveItem(item)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
               </div>
             ))}
           </div>

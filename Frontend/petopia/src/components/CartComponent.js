@@ -1,13 +1,15 @@
 'use client'
 
 import { useRef, useEffect } from 'react'
-import { ShoppingCart, X } from 'lucide-react'
+import Image from 'next/image'
+import { useRouter } from 'next/navigation'
+import { ShoppingCart, Plus, Minus, Trash2, X, Router } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { motion, AnimatePresence } from 'framer-motion'
 import { useCart } from '@/contexts/CartContext'
 import { useToast } from "@/hooks/use-toast"
-import { CartItem } from './CartItem'
+import Link from 'next/link'
 
 export default function CartComponent() {
   const { 
@@ -20,6 +22,7 @@ export default function CartComponent() {
     totalPrice,
     closeCart 
   } = useCart()
+  const router = useRouter()
   
   const { toast } = useToast()
   const cartRef = useRef(null)
@@ -57,7 +60,10 @@ export default function CartComponent() {
       })
     })
   }
-
+  const handleCheckout = () => {
+    closeCart()
+    router.push('/cart')
+  }
   return (
     <AnimatePresence>
       {isCartOpen && (
@@ -86,14 +92,34 @@ export default function CartComponent() {
               <>
                 <ScrollArea className="h-[300px] pr-4">
                   {cart.map((item) => (
-                    <div key={item.id} className="mb-4 pb-4 border-b border-border">
-                      <CartItem
-                        item={item}
-                        onUpdateQuantity={updateQuantity}
-                        onRemove={handleRemoveFromCart}
-                        size="small"
-                        onLinkClick={closeCart}
-                      />
+                    <div key={item.id} className="flex items-center justify-between mb-4 pb-4 border-b border-border">
+                      <div className="flex items-center space-x-4">
+                        <div className="relative w-16 h-16 rounded-md overflow-hidden">
+                          <Image src={item.images[0].image} alt={item.name} fill style={{ objectFit: 'cover' }} />
+                        </div>
+                        <div>
+                          <Link 
+                            href={`/product/${item.id}`} 
+                            className="hover:text-primary transition-colors"
+                            onClick={() => closeCart()}
+                          >
+                            <h3 className="font-semibold">{item.name}</h3>
+                          </Link>
+                          <p className="text-sm text-muted-foreground">${Math.floor(item.price)}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Button variant="outline" size="icon" onClick={() => updateQuantity(item.id, -1)}>
+                          <Minus className="h-4 w-4" />
+                        </Button>
+                        <span className="w-8 text-center">{item.quantity}</span>
+                        <Button variant="outline" size="icon" onClick={() => updateQuantity(item.id, 1)}>
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleRemoveFromCart(item)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </ScrollArea>
@@ -104,7 +130,7 @@ export default function CartComponent() {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <Button variant="outline" onClick={handleClearCart} className="w-full">Clear Cart</Button>
-                    <Button className="w-full">Checkout</Button>
+                    <Button onClick={handleCheckout} className="w-full">Checkout</Button>
                   </div>
                 </div>
               </>
