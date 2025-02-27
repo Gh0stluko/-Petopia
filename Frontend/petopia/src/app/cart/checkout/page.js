@@ -40,12 +40,14 @@ export default function CheckoutPage() {
 
   // Перевіряємо валідність форми доставки при зміні будь-якого поля
   useEffect(() => {
-    const isValid = !!(formData.firstName && 
-                     formData.lastName && 
-                     formData.email && 
-                     formData.phone && 
-                     formData.city &&
-                     formData.branch)
+    const isValid = !!(
+      formData.firstName && 
+      formData.lastName && 
+      formData.email && 
+      formData.phone && 
+      formData.city &&
+      formData.branch
+    )
     setIsShippingValid(isValid)
   }, [formData])
   
@@ -59,7 +61,6 @@ export default function CheckoutPage() {
       })
       return false
     }
-    
     if (!formData.lastName) {
       toast({
         title: "Обов'язкове поле",
@@ -68,7 +69,6 @@ export default function CheckoutPage() {
       })
       return false
     }
-    
     if (!formData.email) {
       toast({
         title: "Обов'язкове поле",
@@ -77,7 +77,6 @@ export default function CheckoutPage() {
       })
       return false
     }
-    
     if (!formData.phone) {
       toast({
         title: "Обов'язкове поле",
@@ -86,7 +85,6 @@ export default function CheckoutPage() {
       })
       return false
     }
-    
     if (!formData.city) {
       toast({
         title: "Обов'язкове поле",
@@ -95,7 +93,6 @@ export default function CheckoutPage() {
       })
       return false
     }
-    
     if (!formData.branch) {
       toast({
         title: "Обов'язкове поле",
@@ -104,7 +101,6 @@ export default function CheckoutPage() {
       })
       return false
     }
-    
     return true
   }
   
@@ -118,30 +114,46 @@ export default function CheckoutPage() {
     setActiveTab(value)
   }
   
-  // Fetch cities from Nova Poshta API
+  // Функція для пошуку міст через Nova Poshta API
   const fetchCities = async (search = '') => {
     if (!search) return
-    
     setLoadingCities(true)
     try {
-      // Simulate API response
-      await new Promise(resolve => setTimeout(resolve, 500))
-      
-      // Mock cities data for demonstration
-      const mockCities = [
-        { ref: 'c1', name: 'Київ' },
-        { ref: 'c2', name: 'Львів' },
-        { ref: 'c3', name: 'Одеса' },
-        { ref: 'c4', name: 'Харків' },
-        { ref: 'c5', name: 'Дніпро' },
-      ].filter(city => city.name.toLowerCase().includes(search.toLowerCase()))
-      
-      setCities(mockCities)
+      const response = await fetch('https://api.novaposhta.ua/v2.0/json/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          apiKey: process.env.NEXT_PUBLIC_NP_API_KEY,
+          modelName: 'Address',
+          calledMethod: 'getCities',
+          methodProperties: {
+            FindByString: search,
+            Limit: 10
+          }
+        })
+      })
+      const data = await response.json()
+      if (data.success) {
+        // Формуємо масив міст з API
+        const citiesData = data.data.map(item => ({
+          ref: item.Ref,
+          name: item.Description
+        }))
+        setCities(citiesData)
+      } else {
+        toast({
+          title: "Помилка",
+          description: "Не вдалося завантажити міста",
+          variant: "destructive"
+        })
+      }
     } catch (error) {
       console.error('Error fetching cities:', error)
       toast({
-        title: "Помилка при завантаженні міст",
-        description: "Спробуйте знову пізніше",
+        title: "Помилка",
+        description: "Сталася помилка при завантаженні міст",
         variant: "destructive"
       })
     } finally {
@@ -149,32 +161,47 @@ export default function CheckoutPage() {
     }
   }
   
-  // Fetch Nova Poshta branches for selected city
+  // Функція для пошуку відділень (складів) через Nova Poshta API
   const fetchBranches = async (cityRef, search = '') => {
     if (!cityRef) return
-    
     setLoadingBranches(true)
     try {
-      // Simulate API response
-      await new Promise(resolve => setTimeout(resolve, 500))
-      
-      // Mock branches data for demonstration
-      const mockBranches = [
-        { ref: 'b1', number: 1, address: 'вул. Хрещатик, 22' },
-        { ref: 'b2', number: 2, address: 'вул. Велика Васильківська, 55' },
-        { ref: 'b3', number: 3, address: 'просп. Перемоги, 100' },
-        { ref: 'b4', number: 4, address: 'вул. Богдана Хмельницького, 17/52' },
-      ].filter(branch => {
-        const searchLower = search.toLowerCase()
-        return String(branch.number).includes(search) || branch.address.toLowerCase().includes(searchLower)
+      const response = await fetch('https://api.novaposhta.ua/v2.0/json/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          apiKey: process.env.NEXT_PUBLIC_NP_API_KEY,
+          modelName: 'AddressGeneral',
+          calledMethod: 'getWarehouses',
+          methodProperties: {
+            CityRef: cityRef,
+            FindByString: search,
+            Limit: 10
+          }
+        })
       })
-      
-      setBranches(mockBranches)
+      const data = await response.json()
+      if (data.success) {
+        const branchesData = data.data.map(item => ({
+          ref: item.Ref,
+          number: item.Number,
+          address: item.ShortAddress
+        }))
+        setBranches(branchesData)
+      } else {
+        toast({
+          title: "Помилка",
+          description: "Не вдалося завантажити відділення",
+          variant: "destructive"
+        })
+      }
     } catch (error) {
       console.error('Error fetching branches:', error)
       toast({
-        title: "Помилка при завантаженні відділень",
-        description: "Спробуйте знову пізніше",
+        title: "Помилка",
+        description: "Сталася помилка при завантаженні відділень",
         variant: "destructive"
       })
     } finally {
@@ -222,12 +249,12 @@ export default function CheckoutPage() {
   const handleBranchSearch = (value) => {
     setSearchBranch(value)
   }
-  
   const handleBranchSelect = (branch) => {
     setFormData(prev => ({ 
       ...prev, 
       branch: `Відділення №${branch.number}: ${branch.address}` 
-    }))
+    }));
+    setSearchBranch(null); // Важливо встановити null, а не порожній рядок
   }
   
   const handleCheckboxChange = (name, checked) => {
@@ -243,22 +270,17 @@ export default function CheckoutPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
     if (!validateShippingForm()) {
       return
     }
-    
     setLoading(true)
-    
     try {
-      // Simulating API call with timeout
+      // Симуляція запиту до API
       await new Promise(resolve => setTimeout(resolve, 1500))
-      
       toast({
         title: "Замовлення оформлено успішно!",
         description: "Дякуємо за ваше замовлення",
       })
-      
       clearCart()
       router.push('/order/success')
     } catch (error) {
@@ -406,43 +428,68 @@ export default function CheckoutPage() {
                     {formData.city && (
                       <div className="space-y-2">
                         <Label htmlFor="branch">Відділення Нової Пошти*</Label>
-                        <div className="relative">
-                          <Input 
-                            id="searchBranch"
-                            value={searchBranch}
-                            onChange={(e) => handleBranchSearch(e.target.value)}
-                            placeholder="Введіть номер або адресу відділення"
-                          />
-                          <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                          {loadingBranches && (
-                            <div className="absolute right-8 top-1/2 transform -translate-y-1/2">
-                              <div className="animate-spin h-4 w-4 border-2 border-primary rounded-full border-t-transparent"></div>
-                            </div>
-                          )}
-                        </div>
                         
-                        {branches.length > 0 && (
-                          <div className="mt-1 border rounded-md shadow-sm">
-                            <ScrollArea className="h-48">
-                              {branches.map((branch) => (
-                                <div 
-                                  key={branch.ref}
-                                  className="p-2 hover:bg-muted cursor-pointer"
-                                  onClick={() => handleBranchSelect(branch)}
-                                >
-                                  <span className="font-semibold">№{branch.number}</span>: {branch.address}
-                                </div>
-                              ))}
-                            </ScrollArea>
-                          </div>
-                        )}
-                        
-                        {formData.branch && (
+                        {/* Показуємо вибране відділення, якщо воно вже вибране */}
+                        {formData.branch && !searchBranch && (
                           <div className="mt-2 p-3 bg-muted rounded-md">
-                            <Label>Вибране відділення:</Label>
-                            <p className="text-sm mt-1">{formData.branch}</p>
+                            <div className="flex justify-between items-center">
+                              <div>
+                                <Label>Вибране відділення:</Label>
+                                <p className="text-sm mt-1">{formData.branch}</p>
+                              </div>
+                              <Button 
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setSearchBranch('')} // Встановлюємо порожній рядок, щоб відкрити пошук
+                                className="text-primary"
+                              >
+                                Змінити
+                              </Button>
+                            </div>
                           </div>
                         )}
+                        
+                        {/* Пошук відділення - показуємо лише якщо відділення ще не вибрано або користувач хоче змінити */}
+                        {(!formData.branch || searchBranch !== null) && (
+                          <div className="relative">
+                            <Input 
+                              id="searchBranch"
+                              value={searchBranch}
+                              onChange={(e) => handleBranchSearch(e.target.value)}
+                              placeholder="Введіть номер або адресу відділення"
+                              autoFocus={!!formData.branch} // Автофокус якщо змінюємо вже вибране відділення
+                            />
+                            <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                            {loadingBranches && (
+                              <div className="absolute right-8 top-1/2 transform -translate-y-1/2">
+                                <div className="animate-spin h-4 w-4 border-2 border-primary rounded-full border-t-transparent"></div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                          {/* Список відділень - показуємо тільки під час активного пошуку */}
+                          {branches.length > 0 && (
+                            // Показувати тільки якщо відділення ще не вибрано АБО користувач активно шукає нове
+                            (!formData.branch || searchBranch !== null) && (
+                              <div className="mt-1 border rounded-md shadow-sm">
+                                <ScrollArea className="h-48">
+                                  {branches.map((branch) => (
+                                    <div 
+                                      key={branch.ref}
+                                      className="p-2 hover:bg-muted cursor-pointer"
+                                      onClick={() => {
+                                        handleBranchSelect(branch);
+                                      }}
+                                    >
+                                      <span className="font-semibold">№{branch.number}</span>: {branch.address}
+                                    </div>
+                                  ))}
+                                </ScrollArea>
+                              </div>
+                            )
+                          )}
                       </div>
                     )}
                     

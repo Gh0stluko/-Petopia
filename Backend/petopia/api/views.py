@@ -323,7 +323,8 @@ def google_auth(request):
     try:
         # Specify the CLIENT_ID of your app that you get from the Google Developer Console
         idinfo = id_token.verify_oauth2_token(access_token, requests.Request(), settings.GOOGLE_OAUTH2_CLIENT_ID)
-
+        print("Google token info:", idinfo)
+        
         if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
             raise ValueError('Wrong issuer.')
 

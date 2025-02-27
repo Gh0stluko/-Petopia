@@ -24,11 +24,12 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import { size } from "lodash";
 
 const inter = Inter({ subsets: ['latin'] });
-
+import { GOOGLE_CLIENT_ID } from "../../env-config";
 export default function RootLayout({ children }) {
+  console.log(GOOGLE_CLIENT_ID);
   return (
     <html lang="en">
-      <GoogleOAuthProvider clientId={process.env.GOOGLE_CLIENT_ID}>
+      <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
         <body
           className={`${geistSans.variable} ${geistMono.variable} ${inter.className} antialiased`}
         >
