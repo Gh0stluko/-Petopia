@@ -10,12 +10,16 @@ import Header from '@/components/nav'
 import Footer from '@/components/footer'
 import { useToast } from "@/hooks/use-toast"
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 export default function CartPage() {
   const { cart, updateQuantity, removeFromCart, totalPrice } = useCart()
   const { toast } = useToast()
   const [user, setUser] = useState(null)
-
+  const router = useRouter()
+  const handleCheckout = () => {
+    router.push('/cart/checkout')
+  }
   const handleUpdateQuantity = (productId, delta) => {
     updateQuantity(productId, delta)
   }
@@ -136,7 +140,7 @@ export default function CartPage() {
                   </div>
                 </div>
                 
-                <Button className="w-full" size="lg">
+                <Button onClick={handleCheckout} className="w-full" size="lg">
                   Proceed to Checkout
                 </Button>
               </div>
