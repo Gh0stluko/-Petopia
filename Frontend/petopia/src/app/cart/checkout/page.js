@@ -8,13 +8,13 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Checkbox } from "@/components/ui/checkbox"
 import { toast } from "@/hooks/use-toast"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { ChevronLeft, CreditCard, MapPin, BadgeCheck, Search } from 'lucide-react'
 import Link from 'next/link'
+import { cn } from '@/lib/utils'
 
 export default function CheckoutPage() {
   const { cart, totalPrice, clearCart } = useCart()
@@ -25,6 +25,8 @@ export default function CheckoutPage() {
   const [cities, setCities] = useState([])
   const [branches, setBranches] = useState([])
   const [searchBranch, setSearchBranch] = useState('')
+  const [activeTab, setActiveTab] = useState("shipping")
+  const [isShippingValid, setIsShippingValid] = useState(false)
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -35,6 +37,86 @@ export default function CheckoutPage() {
     saveInfo: false,
     paymentMethod: 'cash'
   })
+
+  // Перевіряємо валідність форми доставки при зміні будь-якого поля
+  useEffect(() => {
+    const isValid = !!(formData.firstName && 
+                     formData.lastName && 
+                     formData.email && 
+                     formData.phone && 
+                     formData.city &&
+                     formData.branch)
+    setIsShippingValid(isValid)
+  }, [formData])
+  
+  // Функція для валідації форми з відображенням помилок
+  const validateShippingForm = () => {
+    if (!formData.firstName) {
+      toast({
+        title: "Обов'язкове поле",
+        description: "Введіть ім'я",
+        variant: "destructive"
+      })
+      return false
+    }
+    
+    if (!formData.lastName) {
+      toast({
+        title: "Обов'язкове поле",
+        description: "Введіть прізвище",
+        variant: "destructive"
+      })
+      return false
+    }
+    
+    if (!formData.email) {
+      toast({
+        title: "Обов'язкове поле",
+        description: "Введіть електронну пошту",
+        variant: "destructive"
+      })
+      return false
+    }
+    
+    if (!formData.phone) {
+      toast({
+        title: "Обов'язкове поле",
+        description: "Введіть номер телефону",
+        variant: "destructive"
+      })
+      return false
+    }
+    
+    if (!formData.city) {
+      toast({
+        title: "Обов'язкове поле",
+        description: "Виберіть місто доставки",
+        variant: "destructive"
+      })
+      return false
+    }
+    
+    if (!formData.branch) {
+      toast({
+        title: "Обов'язкове поле",
+        description: "Виберіть відділення Нової Пошти",
+        variant: "destructive"
+      })
+      return false
+    }
+    
+    return true
+  }
+  
+  // Обробник зміни вкладки з блокуванням невалідних переходів
+  const handleTabChange = (value) => {
+    if (value === "payment") {
+      if (!validateShippingForm()) {
+        return
+      }
+    }
+    setActiveTab(value)
+  }
   
   // Fetch cities from Nova Poshta API
   const fetchCities = async (search = '') => {
@@ -42,14 +124,6 @@ export default function CheckoutPage() {
     
     setLoadingCities(true)
     try {
-      // In a real implementation, you would call Nova Poshta API
-      // Example: call to Nova Poshta API to get cities
-      // const response = await fetch('/api/nova-poshta/cities', {
-      //   method: 'POST',
-      //   body: JSON.stringify({ search }),
-      // })
-      // const data = await response.json()
-      
       // Simulate API response
       await new Promise(resolve => setTimeout(resolve, 500))
       
@@ -81,14 +155,6 @@ export default function CheckoutPage() {
     
     setLoadingBranches(true)
     try {
-      // In a real implementation, you would call Nova Poshta API
-      // Example: call to Nova Poshta API to get branches
-      // const response = await fetch('/api/nova-poshta/branches', {
-      //   method: 'POST',
-      //   body: JSON.stringify({ cityRef, search }),
-      // })
-      // const data = await response.json()
-      
       // Simulate API response
       await new Promise(resolve => setTimeout(resolve, 500))
       
@@ -118,13 +184,12 @@ export default function CheckoutPage() {
   
   useEffect(() => {
     if (formData.city) {
-      // Get the cityRef from the selected city
       const selectedCity = cities.find(city => city.name === formData.city)
       if (selectedCity) {
         fetchBranches(selectedCity.ref, searchBranch)
       }
     }
-  }, [searchBranch, formData.city])
+  }, [searchBranch, formData.city, cities])
 
   if (cart.length === 0) {
     return (
@@ -168,26 +233,24 @@ export default function CheckoutPage() {
   const handleCheckboxChange = (name, checked) => {
     setFormData(prev => ({ ...prev, [name]: checked }))
   }
+  
+  // Функція для переходу на вкладку оплати
+  const handleGoToPayment = () => {
+    if (validateShippingForm()) {
+      setActiveTab("payment")
+    }
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setLoading(true)
     
-    // Validation
-    if (!formData.firstName || !formData.lastName || !formData.email || !formData.phone || !formData.city || !formData.branch) {
-      toast({
-        title: "Недостатньо інформації",
-        description: "Заповніть усі обов'язкові поля",
-        variant: "destructive"
-      })
-      setLoading(false)
+    if (!validateShippingForm()) {
       return
     }
-
+    
+    setLoading(true)
+    
     try {
-      // Here you would normally send the order to your API
-      // const response = await api.post('/orders', { items: cart, customer: formData, total: totalPrice })
-      
       // Simulating API call with timeout
       await new Promise(resolve => setTimeout(resolve, 1500))
       
@@ -223,12 +286,25 @@ export default function CheckoutPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left side - Form */}
         <div className="lg:col-span-2">
-          <Tabs defaultValue="shipping" className="w-full">
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="shipping" className="flex items-center gap-2">
                 <MapPin className="h-4 w-4" /> Доставка
               </TabsTrigger>
-              <TabsTrigger value="payment" className="flex items-center gap-2">
+              <TabsTrigger 
+                value="payment" 
+                className={cn(
+                  "flex items-center gap-2",
+                  !isShippingValid && "opacity-50 cursor-not-allowed"
+                )}
+                disabled={!isShippingValid}
+                onClick={(e) => {
+                  if (!isShippingValid) {
+                    e.preventDefault()
+                    validateShippingForm() // Показуємо повідомлення про валідацію
+                  }
+                }}
+              >
                 <CreditCard className="h-4 w-4" /> Оплата
               </TabsTrigger>
             </TabsList>
@@ -380,7 +456,10 @@ export default function CheckoutPage() {
                     </div>
                   </CardContent>
                   <CardFooter>
-                    <Button type="button" onClick={() => document.querySelector('[data-value="payment"]').click()}>
+                    <Button 
+                      type="button" 
+                      onClick={handleGoToPayment}
+                    >
                       Перейти до оплати
                     </Button>
                   </CardFooter>
@@ -433,7 +512,7 @@ export default function CheckoutPage() {
           </Tabs>
         </div>
         
-        {/* Right side - Order Summary */}
+        {/* Права частина */}
         <div>
           <Card>
             <CardHeader>
