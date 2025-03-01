@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Label } from "@/components/ui/label"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
-import { ShoppingCart, UserCircle, Camera } from 'lucide-react'
+import { ShoppingCart, UserCircle, Camera, Package, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react'
 import Snowfall from 'react-snowfall'
 import api from '@/app/services/api'
 import { Skeleton } from "@/components/ui/skeleton"
@@ -22,6 +22,9 @@ import { ToastAction } from "@/components/ui/toast"
 import { useToast } from "@/hooks/use-toast"
 import { Toaster } from "@/components/ui/toaster"
 import Header from '@/components/nav'
+import { Badge } from "@/components/ui/badge"
+import Image from 'next/image'
+
 export default function AccountPage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [user, setUser] = useState({})
@@ -31,6 +34,9 @@ export default function AccountPage() {
   const [cart, setCart] = useState([])
   const [passwordError, setPasswordError] = useState('')
   const { toast } = useToast()
+  const [orders, setOrders] = useState([])
+  const [ordersLoading, setOrdersLoading] = useState(true)
+  const [expandedOrders, setExpandedOrders] = useState({})
 
   const [cropperOpen, setCropperOpen] = useState(false)
   const [croppedImage, setCroppedImage] = useState(null)
@@ -48,6 +54,9 @@ export default function AccountPage() {
       setUser(res.data)
       if (res.data.registration_complete === true) {
         setIsLoading(false)
+        
+        // Fetch user's orders after getting user data
+        fetchOrders()
       } else {
         router.push('/account/auth/verification')
       }
@@ -56,8 +65,50 @@ export default function AccountPage() {
       setIsLoading(false)
     })
   }, [router])
-  // Mock order history
-  const orders = []
+  
+// Fetch user's order history
+const fetchOrders = async () => {
+  setOrdersLoading(true)
+  try {
+    // Use the correct path without the 'api' prefix since it's likely already in the base URL
+    const response = await api.get('get-orders/');
+    setOrders(response.data);
+    console.log('Orders:', response.data);
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+    toast({
+      variant: "destructive",
+      title: "Error",
+      description: "Failed to load order history",
+    });
+  } finally {
+    setOrdersLoading(false);
+  }
+};
+
+  // Helper function to get order status badge styling
+  const getStatusBadgeVariant = (status) => {
+    switch(status.toLowerCase()) {
+      case 'pending': return 'bg-yellow-100 text-yellow-800'
+      case 'processing': return 'bg-blue-100 text-blue-800'
+      case 'shipped': return 'bg-indigo-100 text-indigo-800'
+      case 'delivered': return 'bg-green-100 text-green-800'
+      case 'cancelled': return 'bg-red-100 text-red-800'
+      default: return 'bg-gray-100 text-gray-800'
+    }
+  }
+  
+  // Format date to local format
+  const formatDate = (dateString) => {
+    if (!dateString) return ''
+    return new Date(dateString).toLocaleDateString('uk-UA', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -124,8 +175,6 @@ export default function AccountPage() {
         action: ToastAction.Error,
       })
     }
-
-
   }
 
   const handleFileChange = (e) => {
@@ -252,12 +301,26 @@ export default function AccountPage() {
     const cart = getCartFromLocalStorage()
     setCart(cart)
   }, [])
+
+  // View order details
+  const viewOrderDetails = (orderId) => {
+    router.push(`/order/${orderId}`)
+  }
+
+  // Toggle order expansion
+  const toggleOrderExpansion = (orderId) => {
+    setExpandedOrders(prev => ({
+      ...prev,
+      [orderId]: !prev[orderId]
+    }));
+  };
+
   return (
     <div className=" bg-gray-100 flex flex-col">
       <Header User = {user} cart = {getCartFromLocalStorage} />
 
       <main className="flex-grow container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8">My Account</h1>
+        <h1 className="text-3xl font-bold mb-8">Мій обліковий запис</h1>
         {isLoading ? (
           <div className="space-y-4">
             <Skeleton className="h-12 w-[250px]" />
@@ -269,7 +332,7 @@ export default function AccountPage() {
             <div className="mb-8 flex items-center space-x-4">
               <div className="relative">
                 <Avatar className="w-24 h-24">
-                  <AvatarImage src={user?.avatar} alt="User Avatar" />
+                  <AvatarImage src={user?.avatar} alt="Аватар користувача" />
                   <AvatarFallback>
                   {user.username ? `${user?.username[0]}${user?.username[1]}` : '??'}
                 </AvatarFallback>
@@ -294,47 +357,47 @@ export default function AccountPage() {
             </div>
             <Tabs defaultValue="info" className="space-y-4">
               <TabsList>
-                <TabsTrigger value="info">Personal Info</TabsTrigger>
-                <TabsTrigger value="orders">Order History</TabsTrigger>
-                <TabsTrigger value="settings">Account Settings</TabsTrigger>
+                <TabsTrigger value="info">Особиста інформація</TabsTrigger>
+                <TabsTrigger value="orders">Історія замовлень</TabsTrigger>
+                <TabsTrigger value="settings">Налаштування</TabsTrigger>
               </TabsList>
               <TabsContent value="info">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Personal Information</CardTitle>
+                    <CardTitle>Особиста інформація</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <form onSubmit={handleSubmit} className="space-y-4">
                       <div>
-                        <Label htmlFor="username">Username</Label>
+                        <Label htmlFor="username">Ім'я користувача</Label>
                         <Input id="username" defaultValue={user.username} readOnly
                           style={{ backgroundColor: '#f0f0f0', color: '#333', borderColor: '#ccc' }}
                         />
                       </div>
                       <div>
-                        <Label htmlFor="email">Email</Label>
+                        <Label htmlFor="email">Електронна пошта</Label>
                         <Input id="email" type="email" defaultValue={user.email} readOnly 
                           style={{ backgroundColor: '#f0f0f0', color: '#333', borderColor: '#ccc' }}
                         />
                       </div>
                       <div>
-                        <Label htmlFor="name">Name</Label>
+                        <Label htmlFor="name">Ім'я</Label>
                         <Input id="name" defaultValue={user.first_name} />
                       </div>
                       <div>
-                        <Label htmlFor="surname">Surname</Label>
+                        <Label htmlFor="surname">Прізвище</Label>
                         <Input id="surname" defaultValue={user.last_name} />
                       </div>
                       <div>
-                        <Label htmlFor="address">Address</Label>
+                        <Label htmlFor="address">Адреса</Label>
                         <Input id="address" defaultValue={user.address} />
                       </div>
                       <div>
-                        <Label htmlFor="dateOfBirth">Date of Birth</Label>
+                        <Label htmlFor="dateOfBirth">Дата народження</Label>
                         <Input id="dateOfBirth" type="date" defaultValue={user.date_birth} />
                       </div>
                       <div>
-                        <Label htmlFor="phoneNumber">Phone Number</Label>
+                        <Label htmlFor="phoneNumber">Телефон</Label>
                         <div className="flex">
                           <PhoneInput
                             country={'ua'}
@@ -349,15 +412,15 @@ export default function AccountPage() {
                         </div>
                       </div>
                       <div>
-                        <Label htmlFor="gender">Gender</Label>
+                        <Label htmlFor="gender">Стать</Label>
                         <select id="gender" defaultValue={user.gender} className="w-full p-2 border rounded">
-                          <option value="Male">Male</option>
-                          <option value="Female">Female</option>
-                          <option value="Other">Other</option>
-                          <option value="Prefer not to say">Prefer not to say</option>
+                          <option value="Male">Чоловіча</option>
+                          <option value="Female">Жіноча</option>
+                          <option value="Other">Інше</option>
+                          <option value="Prefer not to say">Не бажаю вказувати</option>
                         </select>
                       </div>
-                      <Button type="submit">Update Information</Button>
+                      <Button type="submit">Оновити інформацію</Button>
                     </form>
                   </CardContent>
                 </Card>
@@ -365,68 +428,193 @@ export default function AccountPage() {
               <TabsContent value="orders">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Order History</CardTitle>
+                    <CardTitle>Історія замовлень</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-4">
-                      {orders.map((order) => (
-                        <Card key={order.id}>
-                          <CardContent className="flex justify-between items-center p-4">
-                            <div>
-                              <p className="font-semibold">{order.id}</p>
-                              <p className="text-sm text-gray-500">{order.date}</p>
+                    {ordersLoading ? (
+                      <div className="space-y-4">
+                        <Skeleton className="h-24 w-full" />
+                        <Skeleton className="h-24 w-full" />
+                        <Skeleton className="h-24 w-full" />
+                      </div>
+                    ) : orders.length === 0 ? (
+                      <div className="text-center py-10">
+                        <Package className="h-16 w-16 mx-auto text-gray-300 mb-4" />
+                        <h3 className="text-xl font-medium text-gray-700">Ще немає замовлень</h3>
+                        <p className="text-gray-500 mt-2">Коли ви зробите замовлення, вони з'являться тут</p>
+                        <Button className="mt-6" onClick={() => router.push('/')}>Почати покупки</Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {orders.map((order) => (
+                          <Card key={order.id} className="overflow-hidden">
+                            <div 
+                              className="border-b px-6 py-4 bg-gray-50 flex justify-between items-center cursor-pointer"
+                              onClick={() => toggleOrderExpansion(order.id)}
+                            >
+                              <div>
+                                <div className="flex items-center">
+                                  <span className="font-semibold text-lg">Замовлення #{order.id}</span>
+                                  <span className={`ml-3 px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeVariant(order.status)}`}>
+                                    {order.status === 'pending' ? 'Очікує обробки' : 
+                                     order.status === 'processing' ? 'В обробці' :
+                                     order.status === 'shipped' ? 'Відправлено' :
+                                     order.status === 'delivered' ? 'Доставлено' :
+                                     order.status === 'cancelled' ? 'Скасовано' : order.status}
+                                  </span>
+                                </div>
+                                <p className="text-sm text-gray-500">{formatDate(order.created_at)}</p>
+                              </div>
+                              <div className="flex items-center">
+                                <div className="text-right mr-4">
+                                  <p className="font-bold text-lg">{Number(order.total_amount).toFixed(2)} грн</p>
+                                  <p className="text-sm text-gray-500">{order.payment_method === 'cash' ? 'Накладений платіж' : 'Онлайн оплата'}</p>
+                                </div>
+                                {expandedOrders[order.id] ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                              </div>
                             </div>
-                            <div className="text-right">
-                              <p className="font-semibold">${order.total.toFixed(2)}</p>
-                              <p className="text-sm text-gray-500">{order.status}</p>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
+                            <CardContent className={`py-4 ${expandedOrders[order.id] ? 'block' : 'hidden'}`}>
+                              <div className="space-y-5">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  <div>
+                                    <h4 className="font-medium text-gray-700 mb-2">Інформація про доставку</h4>
+                                    <div className="bg-gray-50 p-3 rounded">
+                                      <p><span className="font-medium">Адреса:</span> {order.shipping_city}, {order.shipping_address}</p>
+                                      {order.shipping_phone && <p><span className="font-medium">Телефон:</span> {order.shipping_phone}</p>}
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <h4 className="font-medium text-gray-700 mb-2">Деталі замовлення</h4>
+                                    <div className="bg-gray-50 p-3 rounded">
+                                      <p><span className="font-medium">Статус:</span> {
+                                        order.status === 'pending' ? 'Очікує обробки' : 
+                                        order.status === 'processing' ? 'В обробці' :
+                                        order.status === 'shipped' ? 'Відправлено' :
+                                        order.status === 'delivered' ? 'Доставлено' :
+                                        order.status === 'cancelled' ? 'Скасовано' : order.status
+                                      }</p>
+                                      <p><span className="font-medium">Оплата:</span> {order.payment_method === 'cash' ? 'Накладений платіж' : 'Онлайн оплата'}</p>
+                                      <p><span className="font-medium">Дата:</span> {formatDate(order.created_at)}</p>
+                                      {order.tracking_number && <p><span className="font-medium">Код відстеження:</span> {order.tracking_number}</p>}
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                <div>
+                                  <h4 className="font-medium text-gray-700 mb-3">Товари</h4>
+                                  <div className="space-y-4">
+                                    {order.items?.map((item, index) => (
+                                      <div key={index} className="flex items-center border-b pb-3">
+                                        <div className="w-16 h-16 mr-4 relative flex-shrink-0 bg-gray-100 rounded overflow-hidden">
+                                          {item.image ? (
+                                            <div className="h-full w-full relative">
+                                                <Image 
+                                                src={
+                                                  item.image 
+                                                    ? item.image.startsWith('/') 
+                                                      // If it's a relative URL, convert to absolute URL with domain
+                                                      ? `http://${window.location.hostname}:8000${item.image}`
+                                                      // Use as is if it's already absolute
+                                                      : item.image
+                                                    : ''
+                                                }
+                                                alt={item.product_name || "Товар"}
+                                                fill
+                                                sizes="64px"
+                                                style={{ objectFit: 'cover' }}
+                                                className="rounded"
+                                              />
+                                            </div>
+                                          ) : (
+                                            <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                                              <Package className="h-8 w-8 text-gray-400" />
+                                            </div>
+                                          )}
+                                        </div>
+                                        <div className="flex-grow">
+                                          <div className="flex justify-between">
+                                            <h5 
+                                              className="font-medium cursor-pointer hover:text-primary hover:underline"
+                                              onClick={(e) => {
+                                                e.stopPropagation(); // Запобігає спрацьовуванню toggleOrderExpansion
+                                                router.push(`/product/${item.product_id}`);
+                                              }}
+                                            >
+                                              {item.product_name || `Товар #${item.product_id}`}
+                                            </h5>
+                                            <span className="font-medium">{(Number(item.price) * Number(item.quantity)).toFixed(2)} грн</span>
+                                          </div>
+                                          <div className="flex justify-between mt-1">
+                                            <p className="text-sm text-gray-500">
+                                              Кількість: {item.quantity} × {Number(item.price).toFixed(2)} грн
+                                            </p>
+                                            {item.variant_info && <p className="text-sm text-gray-500">{item.variant_info}</p>}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                  <div className="mt-4 flex justify-between border-t pt-3">
+                                    <span className="font-medium">Всього:</span>
+                                    <span className="font-bold text-lg">{Number(order.total_amount).toFixed(2)} грн</span>
+                                  </div>
+                                </div>
+                                
+                                {order.notes && (
+                                  <div>
+                                    <h4 className="font-medium text-gray-700 mb-2">Примітки</h4>
+                                    <p className="text-gray-600 bg-gray-50 p-3 rounded">{order.notes}</p>
+                                  </div>
+                                )}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </TabsContent>
               <TabsContent value="settings">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Account Settings</CardTitle>
+                    <CardTitle>Налаштування облікового запису</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <Tabs defaultValue="password" className="w-full">
                       <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="password">Change Password</TabsTrigger>
-                        <TabsTrigger value="delete">Delete Account</TabsTrigger>
+                        <TabsTrigger value="password">Змінити пароль</TabsTrigger>
+                        <TabsTrigger value="delete">Видалити обліковий запис</TabsTrigger>
                       </TabsList>
                       <TabsContent value="password">
                       <form onSubmit={HandleChangePassword} className="space-y-4">
                         <div>
-                          <Label htmlFor="current-password">Current Password</Label>
+                          <Label htmlFor="current-password">Поточний пароль</Label>
                           <Input id="current-password" type="password" />
                         </div>
                         <div>
-                          <Label htmlFor="new-password">New Password</Label>
+                          <Label htmlFor="new-password">Новий пароль</Label>
                           <Input id="new-password" type="password" />
                         </div>
                         <div>
-                          <Label htmlFor="confirm-password">Confirm New Password</Label>
+                          <Label htmlFor="confirm-password">Підтвердіть новий пароль</Label>
                           <Input id="confirm-password" type="password" />
                         </div>
                         {passwordError && (
                           <p className="text-red-500 text-sm">{passwordError}</p>
                         )}
-                        <Button type="submit">Change Password</Button>
+                        <Button type="submit">Змінити пароль</Button>
                       </form>
                       </TabsContent>
                       <TabsContent value="delete">
                         <div className="space-y-4">
-                          <p className="text-red-600">Warning: This action cannot be undone. All your data will be permanently deleted.</p>
+                          <p className="text-red-600">Увага: Цю дію неможливо скасувати. Всі ваші дані будуть безповоротно видалені.</p>
                           <form onSubmit={HandleAccountDelete} className="space-y-4">
                             <div>
-                              <Label htmlFor="confirm-username">Type your username to confirm</Label>
+                              <Label htmlFor="confirm-username">Введіть ім'я користувача для підтвердження</Label>
                               <Input id="confirm-username" placeholder={user.username} />
                             </div>
-                            <Button variant="destructive" type="submit">Delete Account</Button>
+                            <Button variant="destructive" type="submit">Видалити обліковий запис</Button>
                           </form>
                         </div>
                       </TabsContent>
@@ -442,7 +630,7 @@ export default function AccountPage() {
       <Dialog open={cropperOpen} onOpenChange={setCropperOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Crop Avatar</DialogTitle>
+            <DialogTitle>Обрізати аватар</DialogTitle>
           </DialogHeader>
           <div className="h-[300px] relative">
             <Cropper
@@ -456,8 +644,8 @@ export default function AccountPage() {
             />
           </div>
           <div className="flex justify-end space-x-2">
-            <Button variant="outline" onClick={() => setCropperOpen(false)}>Cancel</Button>
-            <Button onClick={handleCropSave}>Save</Button>
+            <Button variant="outline" onClick={() => setCropperOpen(false)}>Скасувати</Button>
+            <Button onClick={handleCropSave}>Зберегти</Button>
           </div>
         </DialogContent>
       </Dialog>

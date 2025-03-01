@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import CartComponent from "@/components/CartComponent"
 import { useCart } from '@/contexts/CartContext'
+import api from '@/app/services/api'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,7 +24,6 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 export default function Header({ 
-  User, 
   searchQuery, 
   setSearchQuery, 
   handleSearch,
@@ -31,6 +31,24 @@ export default function Header({
 }) {
   const { toggleCart, totalItems, isCartOpen } = useCart()
   const router = useRouter()
+  const [User, setUser] = useState(null)
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        if (Cookies.get('accessToken')) {
+          const response = await api.get('/user/me/')
+          setUser(response.data)
+          
+          // Pre-fill form with user data if available
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error)
+      }
+    }
+    
+    fetchUserData()
+  }, [])
 
   const handleLogout = () => {
     Cookies.remove('accessToken')

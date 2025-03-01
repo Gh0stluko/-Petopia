@@ -65,3 +65,84 @@ class CartSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cart
         fields = '__all__'
+
+
+from rest_framework import serializers
+from .models import Order, OrderItem, Product
+
+class OrderItemSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = OrderItem
+        fields = ['id', 'product_id', 'product_name', 'quantity', 'price', 'image']
+    
+    def get_image(self, obj):
+        try:
+            product = Product.objects.get(id=obj.product_id)
+            image = product.images.first()
+            if image:
+                request = self.context.get('request')
+                if request is not None:
+                    # This creates absolute URLs including domain
+                    return request.build_absolute_uri(image.image.url)
+                return image.image.url
+            return None
+        except Product.DoesNotExist:
+            return None
+            
+    def get_product_details(self, obj):
+        try:
+            product = Product.objects.get(id=obj.product_id)
+            return {
+                'id': product.id,
+                'name': product.name,
+                'images': [{'image': image.image.url} for image in product.images.all()[:1]]
+            }
+        except Product.DoesNotExist:
+            return None
+class OrderSerializer(serializers.ModelSerializer):
+    items = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Order
+        fields = ['id', 'status', 'created_at', 'total_amount', 'payment_method',
+                  'first_name', 'last_name', 'email', 'phone',
+                  'shipping_city', 'shipping_address', 'items']
+    
+    def get_items(self, obj):
+        order_items = OrderItem.objects.filter(order=obj)
+        return OrderItemSerializer(order_items, many=True).data
+
+class OrderDetailSerializer(serializers.ModelSerializer):
+    items = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Order
+        fields = [
+            'id', 'status', 'created_at', 'total_amount', 'payment_method',
+            'first_name', 'last_name', 'email', 'phone',
+            'shipping_city', 'shipping_address', 'items'
+        ]
+    
+    def get_items(self, obj):
+        order_items = OrderItem.objects.filter(order=obj)
+        return OrderItemWithProductSerializer(order_items, many=True).data
+
+class OrderItemWithProductSerializer(serializers.ModelSerializer):
+    product = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = OrderItem
+        fields = ['id', 'product_id', 'product_name', 'quantity', 'price', 'product']
+    
+    def get_product(self, obj):
+        try:
+            product = Product.objects.get(id=obj.product_id)
+            return {
+                'id': product.id,
+                'name': product.name,
+                'images': [{'image': image.image.url} for image in product.images.all()[:1]]
+            }
+        except Product.DoesNotExist:
+            return None

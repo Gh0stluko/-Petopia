@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useCart } from '@/contexts/CartContext'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -9,7 +9,9 @@ import Image from 'next/image'
 import Header from '@/components/nav'
 import Footer from '@/components/footer'
 import { useToast } from "@/hooks/use-toast"
+import Cookies from 'js-cookie'
 import Link from 'next/link'
+import api from '@/app/services/api'
 import { useRouter } from 'next/navigation'
 
 export default function CartPage() {
@@ -23,7 +25,6 @@ export default function CartPage() {
   const handleUpdateQuantity = (productId, delta) => {
     updateQuantity(productId, delta)
   }
-
   const handleRemoveItem = (item) => {
     removeFromCart(item.id, (removedItem) => {
       toast({
