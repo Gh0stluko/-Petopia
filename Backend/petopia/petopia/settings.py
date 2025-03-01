@@ -54,6 +54,9 @@ AUTHENTICATION_BACKENDS = (
     'social_core.backends.google.GoogleOAuth2',
     'django.contrib.auth.backends.ModelBackend',
 )
+# LiqPay Configuration
+LIQPAY_PUBLIC_KEY = os.getenv('LIQPAY_PUBLIC_KEY')  # Replace with your actual LiqPay public key
+LIQPAY_PRIVATE_KEY = os.getenv('LIQPAY_PRIVATE_KEY')  # Replace with your actual LiqPay private key
 
 SOCIAL_AUTH_LOGIN_ERROR_URL = '/user/error/'
 SOCIAL_AUTH_RAISE_EXCEPTIONS = False

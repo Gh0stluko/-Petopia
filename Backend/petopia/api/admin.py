@@ -38,8 +38,8 @@ class OrderItemInline(admin.TabularInline):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('id', 'full_name', 'email', 'phone', 'status', 'payment_method', 'total_amount', 'created_at')
-    list_filter = ('status', 'payment_method', 'created_at')
+    list_display = ('id', 'full_name', 'email', 'phone', 'status', 'payment_method', 'payment_status', 'total_amount', 'created_at')
+    list_filter = ('status', 'payment_method', 'paid', 'created_at')
     search_fields = ('first_name', 'last_name', 'email', 'phone', 'shipping_city', 'shipping_address')
     readonly_fields = ('created_at',)
     inlines = [OrderItemInline]
@@ -51,16 +51,20 @@ class OrderAdmin(admin.ModelAdmin):
             'fields': ('shipping_city', 'shipping_address')
         }),
         ('Оплата та статус', {
-            'fields': ('payment_method', 'status', 'total_amount', 'created_at')
+            'fields': ('payment_method', 'paid', 'status', 'total_amount', 'created_at')
         }),
     )
     list_per_page = 25
     date_hierarchy = 'created_at'
-    actions = ['mark_as_processing', 'mark_as_shipped', 'mark_as_delivered']
+    actions = ['mark_as_processing', 'mark_as_shipped', 'mark_as_delivered', 'mark_as_paid']
     
     def full_name(self, obj):
         return f"{obj.first_name} {obj.last_name}"
     full_name.short_description = 'Ім\'я та прізвище'
+    
+    def payment_status(self, obj):
+        return 'Оплачено' if obj.paid else 'Не оплачено'
+    payment_status.short_description = 'Статус оплати'
     
     def mark_as_processing(self, request, queryset):
         queryset.update(status='processing')
@@ -73,3 +77,7 @@ class OrderAdmin(admin.ModelAdmin):
     def mark_as_delivered(self, request, queryset):
         queryset.update(status='delivered')
     mark_as_delivered.short_description = "Позначити як 'Доставлено'"
+    
+    def mark_as_paid(self, request, queryset):
+        queryset.update(paid=True)
+    mark_as_paid.short_description = "Позначити як 'Оплачено'"

@@ -256,13 +256,15 @@ export default function CheckoutPage() {
 
   // Submit order to database
 // Submit order to database
+// Inside your handleSubmit function:
+
 const handleSubmit = async (e) => {
-  e.preventDefault()
+  e.preventDefault();
   if (!validateShippingForm()) {
-    return
+    return;
   }
   
-  setLoading(true)
+  setLoading(true);
   
   try {
     // Prepare data as a regular JSON object instead of FormData
@@ -282,27 +284,49 @@ const handleSubmit = async (e) => {
         price: item.price
       }))
     };
+    console.log('Order data:', orderData);
     
-    // Submit order to API with JSON content type
-    const response = await api.post('/orders/', orderData, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    // Submit order to API
+    const response = await api.post('/orders/', orderData);
     
     if (response.status === 201) {
       // Order created successfully
-      toast({
-        title: 'Замовлення оформлено успішно!',
-        description: `Номер замовлення: ${response.data.id}`,
-      });
+      const orderId = response.data.id;
       
       // Store order ID in local storage for the success page
-      localStorage.setItem('last_order_id', response.data.id);
+      localStorage.setItem('last_order_id', orderId);
       
-      // Clear cart and redirect to success page
-      clearCart();
-      router.push('/order/success');
+      if (formData.paymentMethod === 'liqpay') {
+        // Get LiqPay payment form data
+        const paymentResponse = await api.get(`/orders/${orderId}/payment/`);
+        
+        // Create hidden form and submit it
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = 'https://www.liqpay.ua/api/3/checkout';
+        form.acceptCharset = 'utf-8';
+        
+        const dataInput = document.createElement('input');
+        dataInput.type = 'hidden';
+        dataInput.name = 'data';
+        dataInput.value = paymentResponse.data.data;
+        
+        const signatureInput = document.createElement('input');
+        signatureInput.type = 'hidden';
+        signatureInput.name = 'signature';
+        signatureInput.value = paymentResponse.data.signature;
+        
+        form.appendChild(dataInput);
+        form.appendChild(signatureInput);
+        
+        document.body.appendChild(form);
+        form.submit();
+        clearCart();
+      } else {
+        // For cash payment, redirect to success page
+        clearCart();
+        router.push('/order/success');
+      }
     }
   } catch (error) {
     console.error('Error placing order:', error);

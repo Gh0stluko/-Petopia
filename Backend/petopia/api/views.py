@@ -729,11 +729,28 @@ def google_auth(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def create_order(request):
-    # Отримуємо дані з запиту - цей рядок пропущено
     data = request.data
     
-    # Логуємо отримані дані для налагодження
+    # Reconstruct items array from form data
+    items = []
+    item_index = 0
+    while True:
+        product_id_key = f'items[{item_index}][product_id]'
+        quantity_key = f'items[{item_index}][quantity]'
+        price_key = f'items[{item_index}][price]'
+        
+        if product_id_key not in data:
+            break
+            
+        items.append({
+            'product_id': data.get(product_id_key),
+            'quantity': data.get(quantity_key),
+            'price': data.get(price_key)
+        })
+        item_index += 1
+    
     print("Отримані дані замовлення:", data)
+    print("Реконструйовані товари:", items)
     
     try:
         # Створюємо замовлення
@@ -756,10 +773,7 @@ def create_order(request):
         order.save()
         
         # Додаємо товари до замовлення
-        items_data = data.get('items', [])
-        print(f"Товари для замовлення: {items_data}")
-        
-        for item_data in items_data:
+        for item_data in items:
             product_id = item_data.get('product_id')
             
             try:

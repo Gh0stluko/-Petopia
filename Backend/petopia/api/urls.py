@@ -4,7 +4,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .views import CustomUserViewSet, ProductViewSet, ImageViewSet, ItemCategoryViewSet, AnimalCategoryViewSet, CartViewSet
 from rest_framework.routers import DefaultRouter
 from django.urls import path, include
-from . import views
+from . import views, liqpay_api
 router = DefaultRouter()
 router.register(r'user', CustomUserViewSet)
 router.register(r'products', ProductViewSet)
@@ -27,5 +27,7 @@ urlpatterns = [
     path('orders/', views.create_order, name='create-order'),
     path('orders/<int:order_id>/', views.get_order, name='get-order'),
     path('get-orders/', views.get_user_orders, name='user-orders'),
+    path('orders/<int:pk>/payment/', liqpay_api.order_payment, name='order_payment'),
+    path('liqpay/callback/', liqpay_api.liqpay_callback, name='liqpay_callback'),
 
 ]

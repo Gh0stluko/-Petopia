@@ -138,6 +138,7 @@ class Order(models.Model):
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     payment_method = models.CharField(max_length=20, choices=PAYMENT_CHOICES)
     created_at = models.DateTimeField(auto_now_add=True)
+    paid = models.BooleanField(default=False)
     updated_at = models.DateTimeField(auto_now=True)
     
     # Інформація про клієнта
