@@ -130,7 +130,7 @@ export default function ProductPage() {
   const handleStarClick = async (rating) => {
     if (!user) {
       toast({
-        title: 'You need to be logged in to submit a review.',
+        title: 'Для додавання відгуку необхідно увійти в систему.',
         status: 'error',
       });
       return;
@@ -139,13 +139,13 @@ export default function ProductPage() {
     try {
       await api.post(`/products/1/rate/`, { rating });
       toast({
-        title: 'Thank you for your review!',
+        title: 'Дякуємо за ваш відгук!',
         status: 'success',
       });
     } catch (error) {
-      console.error('Error submitting review:', error);
+      console.error('Помилка надсилання відгуку:', error);
       toast({
-        title: 'Failed to submit review',
+        title: 'Не вдалося надіслати відгук',
         status: 'error',
       });
     }
@@ -153,7 +153,7 @@ export default function ProductPage() {
   const handleLike = () => {
     setIsFilled(!isFilled);
     toast({
-      title: isFilled ? 'Removed from favorites' : 'Added to favorites',
+      title: isFilled ? 'Видалено з обраного' : 'Додано до обраного',
       status: isFilled ? 'error' : 'success',
     })
   }
@@ -250,8 +250,8 @@ export default function ProductPage() {
     
     addToCartWithQuantity(product, 1, (addedProduct, wasInCart, qty) => {
       toast({
-        title: `${addedProduct.name} added to your cart`,
-        description: `Item added to your shopping cart`,
+        title: `${addedProduct.name} додано до вашого кошика`,
+        description: `Товар додано до вашого кошика`,
         status: "success"
       });
     });
@@ -261,7 +261,7 @@ export default function ProductPage() {
     return (
 
       <div className="min-h-screen bg-gray-50">
-        <motion.header className="sticky top-0 z-50 bg-white shadow-sm">
+        <motion.header className="sticky top-0 з-50 bg-white shadow-sm">
           <div className="container mx-auto px-4 py-4 flex justify-between items-center">
             <Link href="/" className="flex items-center">
               <div className="w-12 h-12 rounded-full relative">
@@ -274,7 +274,7 @@ export default function ProductPage() {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <Input
                   type="search"
-                  placeholder="Search products..."
+                  placeholder="Пошук товарів..."
                   className="w-full pl-10 pr-4 py-2 rounded-full"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -287,7 +287,7 @@ export default function ProductPage() {
               </Button>
               {user ? (
                 <Avatar className="w-8 h-8">
-                  <AvatarImage src={user.avatar} alt="User Avatar" />
+                  <AvatarImage src={user.avatar} alt="Аватар користувача" />
                   <AvatarFallback>{user.first_name?.[0]}{user.last_name?.[0]}</AvatarFallback>
                 </Avatar>
               ) : (
@@ -331,7 +331,7 @@ export default function ProductPage() {
                       disabled={isAnimating}
                     >
                       <ChevronLeft className="h-6 w-6" />
-                      <span className="sr-only">Previous image</span>
+                      <span className="sr-only">Попереднє зображення</span>
                     </Button>
                     <Button 
                       className="absolute right-2 top-1/2 transform -translate-y-1/2 z-10" 
@@ -341,7 +341,7 @@ export default function ProductPage() {
                       disabled={isAnimating}
                     >
                       <ChevronRight className="h-6 w-6" />
-                      <span className="sr-only">Next image</span>
+                      <span className="sr-only">Наступне зображення</span>
                     </Button>
                   </>
                 )}
@@ -362,13 +362,13 @@ export default function ProductPage() {
                     {product.images.length > 0 ? (
                       <Image
                         src={product.images[selectedImage].image}
-                        alt={`${product.name} view`}
+                        alt={`${product.name} фото`}
                         fill
                         className="object-cover"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400">
-                        No image available
+                        Зображення недоступне
                       </div>
                     )}
                   </motion.div>
@@ -389,7 +389,7 @@ export default function ProductPage() {
                     >
                       <Image
                         src={image.image}
-                        alt={`${product.name} view ${index + 1}`}
+                        alt={`${product.name} фото ${index + 1}`}
                         fill
                         className="object-cover"
                       />
@@ -439,15 +439,15 @@ export default function ProductPage() {
                   <div className="mb-3">
                     <div className="flex items-baseline gap-2">
                       <span className="text-3xl font-bold text-primary">
-                        ${Math.floor(product.price)}
+                        {Math.floor(product.price)} грн
                       </span>
                       {product.discount > 0 && (
                         <>
                           <span className="text-lg text-gray-500 line-through">
-                            ${Math.floor(product.price * (1 + product.discount/100))}
+                            {Math.floor(product.price * (1 + product.discount/100))} грн
                           </span>
                           <span className="text-sm font-semibold text-green-500">
-                            {product.discount}% OFF
+                            знижка {product.discount}%
                           </span>
                         </>
                       )}
@@ -457,13 +457,13 @@ export default function ProductPage() {
                   <div className="flex items-center gap-4 pt-4 border-t">
                     {product.brand && (
                       <div className="flex items-center gap-2">
-                        <span className="text-gray-500">Brand:</span>
+                        <span className="text-gray-500">Бренд:</span>
                         <span className="font-medium text-gray-900">{product.brand}</span>
                       </div>
                     )}
                     {product.sku && (
                       <div className="flex items-center gap-2">
-                        <span className="text-gray-500">SKU:</span>
+                        <span className="text-gray-500">Артикул:</span>
                         <span className="font-medium text-gray-900">{product.sku}</span>
                       </div>
                     )}
@@ -477,13 +477,13 @@ export default function ProductPage() {
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-4 4l-4 4m0-4l4 4" />
                       </svg>
-                      <span>Free delivery for orders over $50</span>
+                      <span>Безкоштовна доставка для замовлень понад 1500 грн</span>
                     </div>
                     <div className="flex items-center gap-2 text-sm text-gray-600">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                       </svg>
-                      <span>30-day return policy</span>
+                      <span>14-денна гарантія повернення</span>
                     </div>
                   </div>
 
@@ -493,12 +493,12 @@ export default function ProductPage() {
                       {product.stock > 0 ? (
                         <>
                           <span className="h-2 w-2 rounded-full bg-green-500"></span>
-                          <span className="text-sm font-medium text-green-600">In Stock</span>
+                          <span className="text-sm font-medium text-green-600">В наявності</span>
                         </>
                       ) : (
                         <>
                           <span className="h-2 w-2 rounded-full bg-red-500"></span>
-                          <span className="text-sm font-medium text-red-600">Out of Stock</span>
+                          <span className="text-sm font-medium text-red-600">Немає в наявності</span>
                         </>
                       )}
                     </div>
@@ -513,7 +513,7 @@ export default function ProductPage() {
                         onClick={() => router.push('/cart')}
                       >
                         <ShoppingCart className="mr-2 h-5 w-5" />
-                        View in Cart
+                        Переглянути в кошику
                       </Button>
                     ) : (
                       <Button 
@@ -523,7 +523,7 @@ export default function ProductPage() {
                       >
                         <span className="absolute inset-0 bg-white/10 group-hover:scale-x-100 scale-x-0 transition-transform origin-left duration-300"></span>
                         <ShoppingCart className="mr-2 h-5 w-5" />
-                        {product.stock > 0 ? 'Add to Cart' : 'Out of Stock'}
+                        {product.stock > 0 ? 'Додати до кошика' : 'Немає в наявності'}
                       </Button>
                     )}
 
@@ -535,14 +535,14 @@ export default function ProductPage() {
                         handlewishlist(product.id);
                         if (!user) {
                           toast({
-                            title: 'Please login to add to wishlist',
+                            title: 'Увійдіть, щоб додати до списку бажань',
                             status: 'error',
                           });
                           return;
                         }
                         else{
                           toast({
-                            title: isHeartClicked[product.id] ? 'Removed from wishlist' : 'Added to wishlist',
+                            title: isHeartClicked[product.id] ? 'Видалено зі списку бажань' : 'Додано до списку бажань',
                             status: isHeartClicked[product.id] ? 'error' : 'success',
                           });
                         }
@@ -552,7 +552,7 @@ export default function ProductPage() {
                         className={`h-5 w-5 transition-colors duration-300 ${isHeartClicked[product.id] ? 'fill-red-500 text-red-500' : ''}`}
                       />
                       <span className="sr-only">
-                        {isHeartClicked[product.id] ? 'Remove from favorites' : 'Add to favorites'}
+                        {isHeartClicked[product.id] ? 'Видалити з улюблених' : 'Додати до улюблених'}
                       </span>
                     </Button>
                   </div>
@@ -560,38 +560,20 @@ export default function ProductPage() {
 
                 {/* Product Features */}
                 <div className="bg-white p-6 rounded-lg shadow-sm">
-                  <h3 className="font-semibold mb-4">Product Features</h3>
+                  <h3 className="font-semibold mb-4">Особливості товару</h3>
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div className="flex items-center gap-2">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                       </svg>
-                      <span>Premium Quality</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                      </svg>
-                      <span>Pet-friendly Materials</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                      </svg>
-                      <span>Durable Design</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                      </svg>
-                      <span>Easy to Clean</span>
+                      <span>Якість виробника</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Product Description */}
                 <div className="bg-white p-6 rounded-lg shadow-sm">
-                  <h3 className="font-semibold mb-4">Product Description</h3>
+                  <h3 className="font-semibold mb-4">Опис товару</h3>
                   <div className="relative">
                     <p className={`text-gray-700 whitespace-pre-wrap break-words ${
                       showFullDescription ? '' : 'line-clamp-3'
@@ -603,7 +585,7 @@ export default function ProductPage() {
                         onClick={toggleDescription}
                         className="text-primary hover:text-primary/80 mt-2 text-sm font-medium"
                       >
-                        {showFullDescription ? 'Show less' : 'Show more'}
+                        {showFullDescription ? 'Показати менше' : 'Показати більше'}
                       </button>
                     )}
                   </div>
@@ -614,7 +596,7 @@ export default function ProductPage() {
           {similarProducts.length > 0 && (
                 <div className="border-t mt-8">
                   <div className="p-8">
-                    <h2 className="text-2xl font-bold mb-6">Similar Products</h2>
+                    <h2 className="text-2xl font-bold mb-6">Схожі товари</h2>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                       {similarProducts.map((item) => (
                         <Link key={item.id} href={`/product/${item.id}`}>

@@ -14,21 +14,24 @@ export default function Footer() {
               <Image src="/logo.svg" alt="Petopia" width={40} height={40} />
               <span className="ml-2 text-xl font-bold text-gray-800">Petopia</span>
             </div>
+            {/*
             <div className="flex items-center space-x-2 text-sm text-gray-600">
               <Phone size={16} />
               <span>0-800-123-456</span>
             </div>
+            */}
             <div className="flex items-center space-x-2 text-sm text-gray-600">
               <Mail size={16} />
               <span>підтримка@petopia.com</span>
             </div>
+
           </div>
-          
           <div>
             <h3 className="text-lg font-semibold mb-4 text-gray-800">FAQ</h3>
             <nav className="space-y-2 text-sm">
-              <Link href="#" className="block text-gray-600 hover:text-gray-800">Доставка та повернення</Link>
-              <Link href="#" className="block text-gray-600 hover:text-gray-800">Співпраця</Link>
+              <Link href="/info/shipping" className="block text-gray-600 hover:text-gray-800">Доставка та повернення</Link>
+              <Link href="/info/collaboration" className="block text-gray-600 hover:text-gray-800">Співпраця</Link>
+              <Link href="/info/about" className="block text-gray-600 hover:text-gray-800">Про нас</Link>
               {/* <Link href="#" className="block text-gray-600 hover:text-gray-800">Про сайт</Link> */}
             </nav>
           </div>
@@ -62,7 +65,6 @@ export default function Footer() {
               © {new Date().getFullYear()} Petopia. Усі права захищені.
             </div>
             <div className="flex space-x-4">
-              <Link href="#" className="hover:text-gray-800">Умови використання</Link>
               {/* <Link href="#" className="hover:text-gray-800">Політика конфіденційності</Link> */}
               {/* <Link href="#" className="hover:text-gray-800">Доступність</Link> */}
             </div>

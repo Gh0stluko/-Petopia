@@ -75,11 +75,11 @@ const fetchOrders = async () => {
     setOrders(response.data);
     console.log('Orders:', response.data);
   } catch (error) {
-    console.error('Error fetching orders:', error);
+    console.error('Помилка завантаження замовлень:', error);
     toast({
       variant: "destructive",
-      title: "Error",
-      description: "Failed to load order history",
+      title: "Помилка",
+      description: "Не вдалося завантажити історію замовлень",
     });
   } finally {
     setOrdersLoading(false);
@@ -124,9 +124,17 @@ const fetchOrders = async () => {
     try {
       const response = await api.put('/user/update_me/', updatedUser)
       setUser(response.data)
+      toast({
+        title: "Успіх",
+        description: "Ваші дані успішно оновлено",
+      })
     } catch (error) {
-      console.error('Error updating user information:', error)
-      alert('Failed to update user information')
+      console.error('Помилка оновлення інформації користувача:', error)
+      toast({
+        variant: "destructive",
+        title: "Помилка",
+        description: "Не вдалося оновити інформацію користувача",
+      })
     }
   }
 
@@ -147,8 +155,8 @@ const fetchOrders = async () => {
     if (confirmUsername !== user.username) {
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Username does not match",
+        title: "Помилка",
+        description: "Ім'я користувача не співпадає",
       })
       return
     
@@ -158,8 +166,8 @@ const fetchOrders = async () => {
       const response = await api.post('/delete-account/')
       toast({
         variant: "success",
-        title: "Success",
-        description: "Your account has been successfully deleted.",
+        title: "Успіх",
+        description: "Ваш обліковий запис було успішно видалено.",
         action: ToastAction.Success,
       })
       Cookies.remove('accessToken')
@@ -170,8 +178,8 @@ const fetchOrders = async () => {
     } catch (error) {
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "An error occurred while deleting your account",
+        title: "Помилка",
+        description: "Під час видалення облікового запису сталася помилка",
         action: ToastAction.Error,
       })
     }
@@ -198,12 +206,12 @@ const fetchOrders = async () => {
 
     // Validate inputs
     if (!currentPassword || !newPassword || !confirmPassword) {
-      setPasswordError('All fields are required')
+      setPasswordError('Всі поля обов\'язкові до заповнення')
       return
     }
 
     if (newPassword !== confirmPassword) {
-      setPasswordError('New password and confirmation do not match')
+      setPasswordError('Новий пароль та підтвердження не співпадають')
       return
     }
 
@@ -213,7 +221,7 @@ const fetchOrders = async () => {
     const isLongEnough = newPassword.length >= 8
   
     if (!(hasUpperCase && hasLowerCase && hasNumbers && isLongEnough)) {
-      setPasswordError("Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number.")
+      setPasswordError("Пароль повинен бути не менше 8 символів і містити принаймні одну велику літеру, одну малу літеру та одну цифру.")
       return
     }
 
@@ -225,8 +233,8 @@ const fetchOrders = async () => {
 
       if (response.status === 200) {
         toast({
-          title: "Success",
-          description: "Your password has been successfully changed.",
+          title: "Успіх",
+          description: "Ваш пароль успішно змінено.",
           action: ToastAction.success,
         })
         // Clear the form
@@ -242,14 +250,14 @@ const fetchOrders = async () => {
         router.push('/account/auth')
       }
     } catch (error) {
-      console.error('Error changing password:', error)
+      console.error('Помилка зміни паролю:', error)
       if (error.response && error.response.status === 400) {
-        setPasswordError('Current password is incorrect')
+        setPasswordError('Поточний пароль невірний')
       } else
       if (error.response && error.response.data && error.response.data.detail) {
         setPasswordError(error.response.data.detail)
       } else {
-        setPasswordError('An error occurred while changing the password')
+        setPasswordError('Під час зміни паролю сталася помилка')
       }
     }
   }
@@ -286,9 +294,17 @@ const fetchOrders = async () => {
           })
           setUser({ ...user, avatar: response.data.avatar })
           setCropperOpen(false)
+          toast({
+            title: "Успіх",
+            description: "Фото профілю успішно оновлено",
+          })
         } catch (error) {
-          console.error('Error updating avatar:', error)
-          alert('Failed to update avatar')
+          console.error('Помилка оновлення аватара:', error)
+          toast({
+            variant: "destructive",
+            title: "Помилка",
+            description: "Не вдалося оновити фото профілю",
+          })
         }
       }
     }
@@ -650,7 +666,6 @@ const fetchOrders = async () => {
         </DialogContent>
       </Dialog>
 
-      <Snowfall />
       <Toaster />
     </div>
   )

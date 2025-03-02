@@ -1,18 +1,14 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+module.exports = {
   images: {
-    domains: ['127.0.0.1', 'localhost', 'your-future-nginx-domain.com'],
     remotePatterns: [
       {
-        protocol: 'http',
-        hostname: '**',
+        protocol: 'http', // Change to 'https' if required
+        hostname: '127.0.0.1',
       },
       {
-        protocol: 'https',
-        hostname: '**',
+        protocol: 'http', // Change to 'https' if required
+        hostname: 'localhost',
       },
     ],
   },
 }
-
-module.exports = nextConfig

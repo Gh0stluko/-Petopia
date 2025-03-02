@@ -202,7 +202,7 @@ export default function HomePage() {
                 <div className="relative h-[400px] rounded-lg overflow-hidden">
                   <Image
                     src={`/banners/banner-${index + 1}.jpg`}
-                    alt={`Promotional banner ${index + 1}`}
+                    alt={`Рекламний банер ${index + 1}`}
                     fill
                     className="object-cover"
                     priority={index === 0}
@@ -210,14 +210,13 @@ export default function HomePage() {
                   <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent flex items-center">
                     <div className="text-white p-8 max-w-xl">
                       <h1 className="text-4xl font-bold mb-4">
-                        {index === 0 ? 'Special Offers' : 'Exclusive Deals'}
+                        {index === 0 ? 'Спеціальні пропозиції' : 'Ексклюзивні пропозиції'}
                       </h1>
-                      <Snowfall color="white" snowflakeCount={50} />
                       <p className="text-lg mb-6">
-                        {index === 0 ? 'Discover amazing deals on pet supplies' : 'Save big on pet essentials'}
+                        {index === 0 ? 'Відкрийте для себе чудові пропозиції на товари для домашніх тварин' : 'Заощаджуйте на необхідних товарах для домашніх тварин'}
                       </p>
                       <Button size="lg">
-                        {index === 0 ? 'Shop Now' : 'Explore Now'}
+                        {index === 0 ? 'Купити зараз' : 'Дізнатися більше'}
                       </Button>
                     </div>
                   </div>
@@ -238,7 +237,7 @@ export default function HomePage() {
         ]} 
         handlewishlist={handlewishlist} 
         isHeartClicked={isHeartClicked} 
-        title = "New products" 
+        title = "Нові товари" 
         isLoading={isLoading} 
       />
 
@@ -256,7 +255,7 @@ export default function HomePage() {
         ]}
         handlewishlist={handlewishlist} 
         isHeartClicked={isHeartClicked}
-        title={"Dog's products"}
+        title={"Товари для собак"}
         isLoading={isLoading}
         href='products?animal_category=dogs'
       />
@@ -275,14 +274,14 @@ export default function HomePage() {
         ]}
         handlewishlist={handlewishlist} 
         isHeartClicked={isHeartClicked}
-        title={"Cat's products"}
+        title={"Товари для котів"}
         isLoading={isLoading}
         href='products?animal_category=cats'
       />
       {/* All Categories */}
       <section className="py-12 bg-gray-50">
         <div className="container mx-auto px-4">
-          <h2 className="text-2xl font-semibold mb-6 text-center">All Categories</h2>
+          <h2 className="text-2xl font-semibold mb-6 text-center">Всі категорії</h2>
           {isLoading ? (
     <Carousel
     opts={{
@@ -346,14 +345,14 @@ export default function HomePage() {
       <AlertDialog open={modalOpen} onOpenChange={setModalOpen}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Login Required</AlertDialogTitle>
+          <AlertDialogTitle>Необхідно увійти</AlertDialogTitle>
           <AlertDialogDescription>
-            You need to be logged in to add items to your wishlist. Would you like to log in now?
+            Вам потрібно увійти, щоб додавати товари до списку бажань. Бажаєте увійти зараз?
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className='flex justify-center items-center'>
-          <AlertDialogCancel  onClick={() => setModalOpen(false)}>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={() => router.push('/account/auth/')}>Log In</AlertDialogAction>
+          <AlertDialogCancel  onClick={() => setModalOpen(false)}>Скасувати</AlertDialogCancel>
+          <AlertDialogAction onClick={() => router.push('/account/auth/')}>Увійти</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

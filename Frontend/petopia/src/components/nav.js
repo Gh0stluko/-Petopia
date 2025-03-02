@@ -43,7 +43,7 @@ export default function Header({
           // Pre-fill form with user data if available
         }
       } catch (error) {
-        console.error('Error fetching user data:', error)
+        console.error('Помилка отримання даних користувача:', error)
       }
     }
     
@@ -73,7 +73,7 @@ export default function Header({
             <form onSubmit={handleSearch} className="hidden md:flex relative w-full max-w-sm mx-4">
               <Input
                 type="text"
-                placeholder="Search products..."
+                placeholder="Пошук товарів..."
                 className="pl-10 pr-4 py-2 w-full"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -112,18 +112,18 @@ export default function Header({
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon">
                     <Avatar className="w-8 h-8">
-                      <AvatarImage src={User.avatar} alt="User Avatar" />
+                      <AvatarImage src={User.avatar} alt="Аватар користувача" />
                       <AvatarFallback>{User.first_name?.[0]}{User.last_name?.[0]}</AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                  <DropdownMenuItem onSelect={() => router.push(`/account/${User.username}`)}>Profile</DropdownMenuItem>
-                  <DropdownMenuItem onSelect={() => router.push('/account/orders')}>Orders</DropdownMenuItem>
-                  <DropdownMenuItem onSelect={() => router.push('/account/likes')}>Likes</DropdownMenuItem>
+                  <DropdownMenuLabel>Мій обліковий запис</DropdownMenuLabel>
+                  <DropdownMenuItem onSelect={() => router.push(`/account/${User.username}`)}>Профіль</DropdownMenuItem>
+                  <DropdownMenuItem onSelect={() => router.push('/account/orders')}>Мої замовлення</DropdownMenuItem>
+                  <DropdownMenuItem onSelect={() => router.push('/account/likes')}>Вподобане</DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onSelect={handleLogout}>Log out</DropdownMenuItem>
+                  <DropdownMenuItem onSelect={handleLogout}>Вийти</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
