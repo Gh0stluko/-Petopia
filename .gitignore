@@ -4,3 +4,25 @@
 /Frontend/petopia/.next
 /Frontend/petopia/node_modules
 Backend/petopia/api/migrations
+Backend/petopia/poetry.lock
+Backend/petopia/pyproject.toml
+# Python cache files
+*.pyc
+__pycache__/
+.pytest_cache/
+
+# Environment and IDE files
+.vscode/
+.idea/
+
+# Django cache
+*.log
+*.pot
+*.db
+.DS_Store
+
+# Frontend cache
+.cache/
+dist/
+coverage/
+.next/cache/
