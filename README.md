@@ -84,7 +84,7 @@ This project is distributed under the MIT license. See the [LICENSE](LICENSE) fi
 Petopia - це навчальний/демонстраційний проект веб-додатку для зоомагазину. Це не виробничий сайт, а демонстрація навичок веб-розробки з використанням Django REST Framework для бекенду та Next.js для фронтенду.
 
 <div align="center">
-    <img src="docs/images/main.png" alt="Інтерфейс проекту Petopia" width="800"/>
+    <img src="images/main.png" alt="Інтерфейс проекту Petopia" width="800"/>
 </div>
 
 ## 📌 Впроваджені можливості
@@ -183,19 +183,15 @@ python manage.py runserver
 <summary><b>👉 Переглянути скріншоти</b></summary>
 <div align="center">
     <div>
-        <img src="docs/images/admin1.png" width="45%" alt="Адмін-панель товарів"/>
-        <img src="docs/images/admin2.png" width="45%" alt="Статистика продажів"/>
+        <img src="images/screen1.png" width="45%" alt="Адмін-панель товарів"/>
+        <img src="images/screen2.png" width="45%" alt="Статистика продажів"/>
     </div>
     <div>
-        <img src="docs/images/admin3.png" width="45%" alt="Управління замовленнями"/>
-        <img src="docs/images/admin4.png" width="45%" alt="Налаштування магазину"/>
+        <img src="images/screen3.png" width="45%" alt="Управління замовленнями"/>
+        <img src="images/screen4.png" width="45%" alt="Налаштування магазину"/>
     </div>
 </div>
 </details>
-
-<div align="center">
-    <img src="docs/images/admin1.png" width="70%" alt="Адмін-панель товарів"/>
-</div>
 
 ## 🌐 Змінні середовища
 
