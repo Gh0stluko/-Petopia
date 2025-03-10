@@ -2,12 +2,16 @@ module.exports = {
   images: {
     remotePatterns: [
       {
-        protocol: 'http', // Change to 'https' if required
-        hostname: '127.0.0.1',
+        protocol: 'http',
+        hostname: 'backend', // Use the Docker service name
       },
       {
-        protocol: 'http', // Change to 'https' if required
+        protocol: 'http',
         hostname: 'localhost',
+      },
+      {
+        protocol: 'http',
+        hostname: '127.0.0.1',
       },
     ],
   },

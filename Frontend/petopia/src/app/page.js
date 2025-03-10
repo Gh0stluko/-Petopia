@@ -228,7 +228,7 @@ export default function HomePage() {
           <CarouselNext />
         </Carousel>
       </section>
-
+      
       {/* New Products */}
       <NewProducts 
         products={[
@@ -316,10 +316,10 @@ export default function HomePage() {
                     }}>
                       <CardContent className="p-0">
                         <div className="relative h-40 bg-gray-200 rounded-lg overflow-hidden transition-transform duration-300 group-hover:scale-105">
-                          <Image
+                          <img
                             src={category.image}
                             alt={category.name}
-                            fill
+                            
                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                             style={{ objectFit: 'cover' }}
                           />
