@@ -190,6 +190,10 @@ python manage.py runserver
         <img src="images/screen3.png" width="45%" alt="Управління замовленнями"/>
         <img src="images/screen4.png" width="45%" alt="Налаштування магазину"/>
     </div>
+        <div>
+        <img src="images/screen5.png" width="45%" alt="Управління замовленнями"/>
+        <img src="images/screen6.png" width="45%" alt="Налаштування магазину"/>
+    </div>
 </div>
 </details>
 
