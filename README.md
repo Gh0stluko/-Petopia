@@ -17,7 +17,7 @@ Petopia is a modern pet store web application that allows users to browse and pu
 Petopia aims to provide pet owners with a convenient and user-friendly platform to discover and purchase high-quality products for their beloved animals. Our focus is on creating an intuitive shopping experience with thorough product information and seamless checkout process.
 
 <div align="center">
-    <img src="docs/images/main.png" alt="Petopia Main Page" width="800"/>
+    <img src="images/main.png" alt="Petopia Main Page" width="800"/>
 </div>
 
 ## 📌 Key Features
@@ -42,7 +42,7 @@ Petopia aims to provide pet owners with a convenient and user-friendly platform 
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/petopia.git
+git clone https://github.com/clone/petopia.git
 cd petopia
 
 # Create .env file from example
@@ -141,7 +141,7 @@ Petopia створено для надання власникам домашні
 
 ```bash
 # Клонувати репозиторій
-git clone https://github.com/yourusername/petopia.git
+git clone https://github.com/gh0stluko/petopia.git
 cd petopia
 
 # Створити файл .env на основі прикладу
