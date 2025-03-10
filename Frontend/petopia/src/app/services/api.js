@@ -2,16 +2,23 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 
 const api = axios.create({
-  baseURL: 'http://127.0.0.1:8000/api', // Ensure this is correct
+  baseURL: 'http://localhost:8000/api', // Ensure this is correct
   withCredentials: true,
-  headers: {
-    'Content-Type': 'multipart/form-data',
-  },
+  // Remove default Content-Type to allow axios to set it automatically
 });
 
 // Request interceptor
 api.interceptors.request.use(
   (config) => {
+    // Set Content-Type based on the request data
+    if (!config.headers['Content-Type']) {
+      if (config.data instanceof FormData) {
+        config.headers['Content-Type'] = 'multipart/form-data';
+      } else {
+        config.headers['Content-Type'] = 'application/json';
+      }
+    }
+    
     const token = Cookies.get('accessToken');
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
@@ -58,5 +65,28 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+// Utility function to transform image URLs for Next.js
+export const getImageUrl = (url) => {
+  if (!url) return '';
+  
+  // If it's already a relative URL, return as is
+  if (url.startsWith('/')) {
+    // In production, keep the original URL for direct access
+    // In development with Docker, we need to use the full URL
+    if (process.env.NODE_ENV === 'development') {
+      return `http://localhost:8000${url}`;
+    }
+    return url;
+  }
+  
+  // If it's already a full URL, return as is
+  if (url.startsWith('http')) {
+    return url;
+  }
+  
+  // Otherwise, prepend the backend URL
+  return `http://localhost:8000/${url}`;
+};
 
 export default api;
