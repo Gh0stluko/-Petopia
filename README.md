@@ -1,42 +1,43 @@
-# 🐾 Petopia
+# 🐾 Petopia - Pet Store Project
 
 ![Next.js](https://img.shields.io/badge/Next.js-13-black.svg)
 ![React](https://img.shields.io/badge/React-18-blue.svg)
 ![Django](https://img.shields.io/badge/Django-4.2-green.svg)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue.svg)
+![Status](https://img.shields.io/badge/Status-In%20Development-yellow.svg)
 
 <details>
 <summary><b>🇬🇧 English Version (click to expand)</b></summary>
 
-# 🐾 Petopia
+# 🐾 Petopia - Pet Store Project
 
-Petopia is a modern pet store web application that allows users to browse and purchase products for their pets. The project is built using Django REST Framework for the backend and Next.js for the frontend.
+Petopia is a development project showcasing a pet store web application. This is a demonstration/portfolio project built with Django REST Framework for the backend and Next.js for the frontend, and is not a production application.
 
-## 🎯 Project Purpose
+## 🎯 Project Overview
 
-Petopia aims to provide pet owners with a convenient and user-friendly platform to discover and purchase high-quality products for their beloved animals. Our focus is on creating an intuitive shopping experience with thorough product information and seamless checkout process.
+This project demonstrates my skills in creating a modern e-commerce platform for pet products. It's designed to show implementation of various features common in online stores, using modern web development technologies. This project is under active development and serves primarily as a portfolio piece.
 
 <div align="center">
-    <img src="images/main.png" alt="Petopia Main Page" width="800"/>
+    <img src="images/main.png" alt="Petopia Project Interface" width="800"/>
 </div>
 
-## 📌 Key Features
+## 📌 Featured Implementations
 
-- 🛒 Full-featured shopping cart with editing capabilities
-- 👤 User system with Google authentication
-- ❤️ Wishlist for saving favorite products
-- 🔍 Product search and filtering
-- 💳 LiqPay payment system integration
-- 📦 Order tracking and purchase history
-- 📱 Responsive design for mobile devices
+- 🛒 Shopping cart functionality with CRUD operations
+- 👤 User authentication system with Google OAuth integration
+- ❤️ Wishlist implementation for saving products
+- 🔍 Search and filtering capabilities
+- 💳 LiqPay payment integration (test mode only)
+- 📦 Order management and history tracking
+- 📱 Responsive design implementation
 
 ## 💻 Technology Stack
 
 - **Frontend**: Next.js, React, Tailwind CSS, Framer Motion, Axios
-- **Backend**: Django, Django REST Framework, PostgreSQL, Simple JWT for authentication, Social Auth for Google authorization
-- **Infrastructure**: Docker and Docker Compose for containerization, Nginx as proxy server
+- **Backend**: Django, Django REST Framework, PostgreSQL, Simple JWT for authentication, Social Auth for Google integration
+- **Infrastructure**: Docker and Docker Compose for development environment setup
 
-## 🚀 Installation and Launch
+## 🚀 Setup for Development
 
 ### Using Docker (recommended):
 
@@ -48,14 +49,14 @@ cd petopia
 # Create .env file from example
 cp .env.example .env
 
-# Edit .env with your settings
+# Edit .env with your development settings
 nano .env
 
-# Launch containers
+# Launch development containers
 docker-compose up -d
 ```
 
-### Local installation (for development):
+### Local development setup:
 
 ```bash
 # Frontend setup
@@ -78,28 +79,28 @@ This project is distributed under the MIT license. See the [LICENSE](LICENSE) fi
 
 </details>
 
-## 🎯 Призначення проекту
+## 🎯 Про проект
 
-Petopia створено для надання власникам домашніх тварин зручної та дружньої платформи для пошуку та придбання якісних товарів для їхніх улюбленців. Ми зосереджуємось на створенні інтуїтивного досвіду покупок з детальною інформацією про товари та безпроблемним процесом оформлення замовлення.
+Petopia - це навчальний/демонстраційний проект веб-додатку для зоомагазину. Це не виробничий сайт, а демонстрація навичок веб-розробки з використанням Django REST Framework для бекенду та Next.js для фронтенду.
 
 <div align="center">
-    <img src="docs/images/main.png" alt="Petopia Main Page" width="800"/>
+    <img src="docs/images/main.png" alt="Інтерфейс проекту Petopia" width="800"/>
 </div>
 
-## 📌 Ключові можливості
+## 📌 Впроваджені можливості
 
 <details>
 <summary><b>👉 Розгорнути детальний опис можливостей</b></summary>
 
-- 🛒 **Повноцінний кошик для покупок** з можливістю додавання, видалення та редагування кількості товарів
-- 👤 **Розширена система користувачів** з авторизацією через Google, профілями та збереженими адресами доставки
-- ❤️ **Персоналізований список бажань** для збереження улюблених товарів з швидким додаванням до кошика
-- 🔍 **Потужний пошук і фільтрація** товарів за категоріями, цінами, брендами та іншими параметрами
-- 💳 **Безпечна інтеграція з LiqPay** для швидкої та захищеної оплати замовлень
-- 📦 **Детальне відстеження замовлень** та повна історія покупок у особистому кабінеті
-- 📱 **Адаптивний дизайн** для мобільних пристроїв з оптимізованою навігацією та відображенням
-- 🌟 **Система відгуків та оцінок** для товарів з можливістю додавання фотографій
-- 🔔 **Сповіщення про знижки** та повернення товарів у наявність
+- 🛒 **Функціонал кошика для покупок** з можливістю додавання, видалення та редагування кількості товарів
+- 👤 **Система автентифікації** з інтеграцією Google OAuth, профілями та адресами доставки
+- ❤️ **Список бажань** для збереження обраних товарів
+- 🔍 **Пошук і фільтрація** товарів за різними параметрами
+- 💳 **Інтеграція з LiqPay** (в тестовому режимі) для демонстрації процесу оплати
+- 📦 **Керування замовленнями** та історія покупок у особистому кабінеті
+- 📱 **Адаптивний дизайн** для демонстрації на різних пристроях
+- 🌟 **Система відгуків та оцінок** для товарів (частково реалізовано)
+- 🔔 **Функціонал сповіщень** (в розробці)
 
 </details>
 
@@ -109,32 +110,32 @@ Petopia створено для надання власникам домашні
 <summary><b>👉 Розгорнути повний технічний опис</b></summary>
 
 ### Frontend
-- **Next.js** з серверними компонентами для оптимізованого рендерингу та SEO
-- **React** з функціональними компонентами та хуками для управління станом
-- **Tailwind CSS** для гнучкого та ефективного стилізування інтерфейсу
-- **Framer Motion** для плавних анімацій та покращення користувацького досвіду
-- **Axios** для зручної роботи з HTTP запитами та інтеграції з бекендом
-- **React Query** для ефективного кешування даних та управління станом запитів
-- **React Hook Form** для валідації та обробки форм
+- **Next.js** з серверними компонентами для оптимізації рендерингу
+- **React** з функціональними компонентами та хуками
+- **Tailwind CSS** для стилізування інтерфейсу
+- **Framer Motion** для анімацій в інтерфейсі
+- **Axios** для роботи з HTTP запитами
+- **React Query** для кешування даних (частково впроваджено)
+- **React Hook Form** для обробки форм
 
 ### Backend
-- **Django** з оптимізованою архітектурою для швидкої обробки запитів
-- **Django REST Framework** для створення надійного та масштабованого API
-- **PostgreSQL** для надійного зберігання даних та складних запитів
-- **Simple JWT** для безпечної автентифікації користувачів
-- **Social Auth** для інтеграції з Google OAuth та інших соціальних мереж
-- **Celery** для асинхронної обробки задач (відправка повідомлень, генерація звітів)
-- **Redis** для кешування та черг повідомлень
+- **Django** як основний фреймворк
+- **Django REST Framework** для створення API
+- **PostgreSQL** для зберігання даних
+- **Simple JWT** для автентифікації
+- **Social Auth** для інтеграції з Google OAuth
+- **Celery** для асинхронних задач (в процесі впровадження)
+- **Redis** для кешування (в процесі впровадження)
 
 ### Інфраструктура
-- **Docker і Docker Compose** для контейнеризації та спрощення розгортання
-- **Nginx** в якості проксі-сервера та для обслуговування статичних файлів
-- **GitHub Actions** для CI/CD автоматизації
-- **AWS S3** для зберігання медіа-файлів
+- **Docker і Docker Compose** для контейнеризації середовища розробки
+- **Nginx** в якості проксі-сервера
+- **GitHub Actions** для CI/CD (в процесі налаштування)
+- **AWS S3** для зберігання медіа-файлів (в планах)
 
 </details>
 
-## 🚀 Встановлення та запуск
+## 🚀 Встановлення для розробки
 
 <details>
 <summary><b>Використання Docker (рекомендовано)</b></summary>
@@ -147,16 +148,16 @@ cd petopia
 # Створити файл .env на основі прикладу
 cp .env.example .env
 
-# Відредагувати файл .env із вашими налаштуваннями
+# Відредагувати файл .env для середовища розробки
 nano .env
 
-# Запустити контейнери
+# Запустити контейнери розробки
 docker-compose up -d
 ```
 </details>
 
 <details>
-<summary><b>Локальне встановлення (для розробки)</b></summary>
+<summary><b>Локальне встановлення для розробки</b></summary>
 
 ```bash
 # Для встановлення та запуску фронтенду:
@@ -176,10 +177,10 @@ python manage.py runserver
 
 ## 📊 Адміністративний інтерфейс
 
-Система включає розширену адмін-панель для керування товарами, замовленнями та користувачами:
+Проект включає адмін-панель для демонстрації керування товарами, замовленнями та користувачами:
 
 <details>
-<summary><b>👉 Переглянути всі скріншоти</b></summary>
+<summary><b>👉 Переглянути скріншоти</b></summary>
 <div align="center">
     <div>
         <img src="docs/images/admin1.png" width="45%" alt="Адмін-панель товарів"/>
@@ -198,7 +199,7 @@ python manage.py runserver
 
 ## 🌐 Змінні середовища
 
-Створіть файл `.env` у кореневій директорії проекту зі змінними:
+Для розробки створіть файл `.env` у кореневій директорії проекту з такими змінними:
 
 ```
 # Django Settings
@@ -213,19 +214,19 @@ DB_PASSWORD=postgres
 DB_HOST=db
 DB_PORT=5432
 
-# Google OAuth Settings
-GOOGLE_CLIENT_ID=your_google_client_id
-GOOGLE_CLIENT_SECRET=your_google_client_secret
+# Google OAuth Settings (для тестування)
+GOOGLE_CLIENT_ID=your_test_google_client_id
+GOOGLE_CLIENT_SECRET=your_test_google_client_secret
 
-# LiqPay Settings
-LIQPAY_PUBLIC_KEY=your_liqpay_public_key
-LIQPAY_PRIVATE_KEY=your_liqpay_private_key
+# LiqPay Settings (тестовий режим)
+LIQPAY_PUBLIC_KEY=your_test_liqpay_public_key
+LIQPAY_PRIVATE_KEY=your_test_liqpay_private_key
 
-# Email Settings
+# Email Settings (для тестування)
 EMAIL_HOST=smtp.gmail.com
 EMAIL_PORT=587
-EMAIL_HOST_USER=your_email@gmail.com
-EMAIL_HOST_PASSWORD=your_app_password
+EMAIL_HOST_USER=your_test_email@gmail.com
+EMAIL_HOST_PASSWORD=your_test_app_password
 ```
 
 ## 📄 Ліцензія
