@@ -1,4 +1,3 @@
-
 /Backend/petopia/api/__pycache__
 /Backend/petopia/__pycache__
 /Frontend/petopia/.next/build
@@ -7,23 +6,70 @@
 Backend/petopia/api/migrations
 Backend/petopia/poetry.lock
 Backend/petopia/pyproject.toml
-# Python cache files
-*.pyc
+
+# Python / Django
 __pycache__/
-.pytest_cache/
-
-# Environment and IDE files
-.vscode/
-.idea/
-
-# Django cache
-*.log
-*.pot
-*.db
-.DS_Store
-
-# Frontend cache
-.cache/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
 dist/
-coverage/
-.next/cache/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+.env
+.venv
+venv/
+ENV/
+db.sqlite3
+media/
+
+# JavaScript / Node.js / Next.js
+node_modules/
+npm-debug.log
+yarn-debug.log*
+yarn-error.log*
+.next/
+.nuxt/
+out/
+.cache/
+.parcel-cache/
+.vercel
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+*.sublime*
+.netlify
+
+# Docker
+.docker/
+
+# Logs
+logs
+*.log
+
+# Database
+*.sql
+*.sqlite3
+
+# Specific to this project
+build_cache/
